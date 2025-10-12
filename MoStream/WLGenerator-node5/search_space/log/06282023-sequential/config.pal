@@ -1,0 +1,81 @@
+set font "Helvetica, 24"
+#### Style of lines ####
+set style line 1 linecolor rgb "#009E73" linetype -1 linewidth 3 pointtype 3 ps .8         ### x
+set style line 2 linecolor rgb "#9400D3" linetype -1 linewidth 3 pointtype 7  ps .8        ### solid circle
+set style line 3 linecolor rgb "red" linetype -1 linewidth 3 pointtype 5  ps .8        ### solid square
+set style line 4 linecolor rgb "#E69F00" linetype -1 linewidth 2.5 pointtype 11  ps .8       ### solid triangle (down)
+set style line 5 linecolor rgb "#A9AAAF" linetype -1 linewidth 2.5 pointtype 9 ps .8         ### solid triangle (up) 
+set style line 6 linecolor rgb "#0E8D00" linetype -1 linewidth 2.5 pointtype 13 ps .8        ### solid diamond
+set style line 7 linecolor rgb "red" linetype -1 linewidth 2.5 pointtype 13 ps .8        ### solid diamond
+set style line 11 linecolor rgb "#393e58" linetype -1 pointtype 3 ps .8
+set style line 12 linecolor rgb "#3fa3a4" linetype -1 pointtype 3 ps .8
+set style line 13 linecolor rgb "#ffad48" linetype -1 pointtype 3 ps .8
+set style line 14 linecolor rgb "#ff543e" linetype -1 pointtype 3 ps .8
+
+set style line 15 linecolor rgb "#006ba9" linetype -1 pointtype 3 ps .8
+set style line 16 linecolor rgb "#008bd3" linetype -1 pointtype 3 ps .8
+set style line 17 linecolor rgb "#7cb7fb" linetype -1 pointtype 3 ps .8
+set style line 18 linecolor rgb "#c4cefd" linetype -1 pointtype 3 ps .8
+
+
+set style line 10 linecolor rgb "#9400D3"  lt 7 linewidth 2.5 pointtype 3 ps .8         ### x
+set style line 20 linecolor rgb "#009E73"  lt 7 linewidth 2.5 pointtype 7  ps .8        ### solid circle
+set style line 30 linecolor rgb "#56B4E9"  lt 7 linewidth 2.5 pointtype 5  ps .8        ### solid square
+set style line 40 linecolor rgb "#E69F00"  lt 7 linewidth 2.5 pointtype 11  ps .8       ### solid triangle
+set style line 50 linecolor rgb "#A9AAAF"  lt 7 linewidth 2.5 pointtype 9 ps .8         ### solid triangle (up) 
+set style line 60 linecolor rgb "#0E8D00"  lt 7 linewidth 2.5 pointtype 13 ps .8        ### solid diamond
+
+
+three_colors2='#009E73 #9400D3 red'
+four_colors='dark-blue #3fa3a4 grey #ff543e'
+four_colors2='red #9400D3 #009E73 #174089'
+
+#ffad48 #393e58 #ff543e
+
+# xyborder.cfg
+set style line 101 lc rgb '#808080' lt 1 lw 1
+set border 2 ls 101
+set tics nomirror out scale 0.75 textcolor rgb "black"
+set xtics offset 0,.5
+set ytics offset .5,0
+set format '%g'
+
+# Add light grid to plot
+set style line 102 lc rgb 'gray80' lt 7 lw 1 
+set grid back ls 102
+
+# key config
+set key reverse Left
+
+# palette
+set palette maxcolors 24
+set palette defined ( 0 '#1B9E77',\
+                    1 '#D95F02',\
+                    2 '#7570B3',\
+                    3 '#E7298A',\
+                    4 '#66A61E',\
+                    5 '#E6AB02',\
+                    6 '#A6761D',\
+                    7 '#666666',\
+                    8 '#56B4E9',\
+                    9 '#E69F00',\
+                    10 '#A9AAAF',\
+                    11 '#0E8D00',\
+                    12 '#7FC97F',\
+    	    	    13 '#BEAED4',\
+		            14 '#FDC086',\
+		            15 '#FFFF99',\
+		            16 '#386CB0',\
+		            17 '#F0027F',\
+		            18 '#BF5B17',\
+		            19 '#FDCDAC',\
+                    20 '#CCCCCC',\
+                    21 '#F1E2CC',\
+                    22 '#D6F5C9',\
+                    23 '#F781BF')
+
+# colors
+more_colors='#1B9E77 #D95F02 #7570B3 #E7298A #66A61E #E6AB02 #A6761D #666666 #56B4E9 #E69F00 #A9AAAF #0E8D00 #7FC97F #BEAED4 #FDC086 #FFFF99 #386CB0 #F0027F #BF5B17 #FDCDAC #CCCCCC #F1E2CC #D6F5C9 #F781BF'
+#three_colors='#f0c046 #174089 green'
+three_colors='orange #174089 green'
+#three_colors='green red blue'
