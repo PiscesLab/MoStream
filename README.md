@@ -117,6 +117,47 @@ Notes:
 - If Flink job fails on import, install PyFlink or run in `--local` mode.
 - Check Kafka logs: `docker compose logs kafka`.
 
+## Local HTTP shim for quick testing (no Kafka needed)
+
+If you want to test simulator <-> MDWorkflow message exchange without Kafka or a full Flink runtime, two helpers are provided:
+
+- `MDWorkflow_local.py` — tiny server that accepts POST /simulate and returns a small recommendation POST back to the simulator.
+- `simulator.py --local` — posts simulation payloads to the MDWorkflow local server and runs a small HTTP server to accept recommendations.
+
+Quick commands:
+
+Terminal A:
+```bash
+python3 MDWorkflow_local.py --host 0.0.0.0 --port 5001 --sim-host localhost --sim-port 5000
+```
+
+Terminal B:
+```bash
+python3 MoStream/MDStream/WLGenerator/simulator.py --local --md-host localhost --md-port 5001 --local-port 5000 --interval 1.0
+```
+
+You should see round-trip POST logs on both sides. This is recommended for quick developer testing.
+
+## MDWorkflow in-pipeline posting (local Flink mode)
+
+`MDWorkflow.py --local` has been extended to attach a map operator in local mode that will POST each recommendation string to the simulator HTTP endpoint (configured via `SIM_HOST`/`SIM_PORT` environment variables). This requires `pyflink` and a working Flink environment.
+
+Example:
+
+```bash
+export SIM_HOST=localhost
+export SIM_PORT=5000
+python3 MoStream/MDStream/StreamML/MDWorkflow.py --local
+```
+
+Then run the simulator to receive recommendation posts:
+
+```bash
+python3 MoStream/MDStream/WLGenerator/simulator.py --local --local-port 5000
+```
+
+If you want I can add a small launcher script to start both services with one command.
+
 ## Optional: verify messages in topic
 You can use kafka-console-consumer inside the container to peek messages:
 

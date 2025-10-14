@@ -12,6 +12,7 @@ from typing import List, Any, Optional, Tuple, Dict, Union
 from moldesign.utils.conversions import convert_string_to_dict
 from moldesign.utils.callbacks import LRLogger, EpochTimeLogger, TimeLimitCallback
 from moldesign.score.nfp import make_data_loader, ReduceAtoms
+import traceback
 
 def sigmod(x):
     return 1 / (1 + math.exp(-x))
@@ -87,8 +88,13 @@ class InferFunction(KeyedProcessFunction):
         #tmp_search_space = self.state
         #tmp_search_space = load_search_space(chunk_id)
         if (self.state.value() == None):
-           self.state.update(load_search_space(chunk_id))
+            self.state.update(load_search_space(chunk_id))
         tmp_search_space = self.state.value()
+
+        # Defensive: if the search space is empty, return a safe placeholder result
+        if not tmp_search_space:
+            print(f"Warning: empty search space for chunk {chunk_id}; returning placeholder result")
+            return [str(chunk_id) + "$" + "search_space_empty" + "$" + str(0)]
         #if (chunk_id != 2231):
         #   tmp_search_space = self.search_space[chunk_id*500:(chunk_id+1)*500]
         #else:
@@ -108,13 +114,41 @@ class InferFunction(KeyedProcessFunction):
         custom_objects = nfp.custom_objects.copy()
         custom_objects['ReduceAtoms'] = ReduceAtoms
         
-        # Load mpnn model
-        model = tf.keras.models.model_from_json(infra_json_str, custom_objects=custom_objects)
-        weights_list = json.loads(weights_json_str)
-        weights = [np.array(arr) for arr in weights_list]
-        #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
-        model.set_weights(weights)
-        print("infer model loading finished")
+        # Perform inference inside a try/except so we can log tracebacks and return safely
+        try:
+            # Load mpnn model
+            model = tf.keras.models.model_from_json(infra_json_str, custom_objects=custom_objects)
+            weights_list = json.loads(weights_json_str)
+            weights = [np.array(arr) for arr in weights_list]
+            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
+            model.set_weights(weights)
+            print("infer model loading finished")
+
+            # prepare inference args and loader
+            x_tmp = []
+            for smiles_search in tmp_search_space:
+                x_tmp.append(convert_string_to_dict(smiles_search))
+            mol_dicts = np.array(x_tmp)
+            if mol_dicts.size == 0:
+                print(f"Warning: mol_dicts empty after conversion for chunk {chunk_id}")
+                return [str(chunk_id) + "$" + "mol_dicts_empty" + "$" + str(0)]
+            max_size = max(len(x['atom']) for x in mol_dicts)
+            batch_size = len(mol_dicts)
+
+            loader = make_data_loader(
+                mol_dicts,
+                batch_size=batch_size,
+                repeat=False,
+                max_size=max_size,
+            )
+
+            # predicted IP
+            pred_y = np.squeeze(model.predict(loader))
+        except Exception:
+            print(f"Exception during inference for chunk {chunk_id}:")
+            traceback.print_exc()
+            # return a safe fallback to avoid crashing the worker
+            return [str(chunk_id) + "$" + "inference_error" + "$" + str(0)]
         
         # Load search space (inference chunks from redis)
         #smiles_search = random.choice(self.state.value())

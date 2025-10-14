@@ -1,6 +1,12 @@
 # Minimal runtime deps for simulator and basic testing
 kafka-python
-
+qcelemental
+qcengine
+ase  
+networkx
+numpy  # Numerical computations
+rdkit
+npf 
 # Optional / heavy packages (install only if you need the full pipeline)
 # pyflink may require a specific Java and flink distribution; install only if running MDWorkflow without --local
 apache-flink
