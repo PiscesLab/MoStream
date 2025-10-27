@@ -1,4 +1,4 @@
-#from .gitinfo import get_git_info
+from gitinfo import get_git_info
 import platform
 import os
 
@@ -11,7 +11,7 @@ def get_platform_info():
     else:
         accessible = os.cpu_count()
     return {
-        #'git_commit': get_git_info()['commit'],
+        'git_commit': get_git_info()['commit'],
         'processor': platform.machine(),
         'python_version': platform.python_version(),
         'python_compiler': platform.python_compiler(),

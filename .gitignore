@@ -1,9 +1,6 @@
-[200~MoStream/**/runinfo/
-MoStream/**/local/runinfo/
-MoStream/**/search_space/runinfo/
-MoStream/**/submit_scripts/*.sh.out
-*.sh.out
-*.log
-MoStream/MDStream/WLGenerator/search_space/MOS-search.csv
-MoStream/MDStream/StreamML/search_space/MOS-search-simple.txt
-MoStream/MDStream/WLGenerator/dataset/training-data.json
+WLGenerator-node2/
+__pycache__/
+*.pyc
+.env
+.vscode/
+.ipynb_checkpoints/

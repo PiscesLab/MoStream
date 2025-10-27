@@ -1,0 +1,26 @@
+2023-07-07 11:28:33.219 parsl:692 2188 MainThread [INFO]  Python version: 3.9.17 (main, Jul  5 2023, 20:41:20) 
+[GCC 11.2.0]
+2023-07-07 11:28:33.219 parsl:693 2188 MainThread [INFO]  Debug logging: False
+2023-07-07 11:28:33.219 parsl:694 2188 MainThread [INFO]  Log dir: /mnt/media/MDStream/WLGenerator/local/runinfo/000/HighThroughputExecutor
+2023-07-07 11:28:33.219 parsl:695 2188 MainThread [INFO]  Manager ID: 39b3b5519fe0
+2023-07-07 11:28:33.219 parsl:696 2188 MainThread [INFO]  Block ID: 0
+2023-07-07 11:28:33.219 parsl:697 2188 MainThread [INFO]  cores_per_worker: 1.0
+2023-07-07 11:28:33.219 parsl:698 2188 MainThread [INFO]  mem_per_worker: None
+2023-07-07 11:28:33.219 parsl:699 2188 MainThread [INFO]  task_port: 54891
+2023-07-07 11:28:33.219 parsl:700 2188 MainThread [INFO]  result_port: 54452
+2023-07-07 11:28:33.219 parsl:701 2188 MainThread [INFO]  addresses: 127.0.0.1,128.110.96.17,node-1.jliu1721-161156.lsucloud-pg0.apt.emulab.net,192.168.1.2
+2023-07-07 11:28:33.219 parsl:702 2188 MainThread [INFO]  max_workers: inf
+2023-07-07 11:28:33.220 parsl:703 2188 MainThread [INFO]  poll_period: 10
+2023-07-07 11:28:33.220 parsl:704 2188 MainThread [INFO]  address_probe_timeout: 30
+2023-07-07 11:28:33.220 parsl:705 2188 MainThread [INFO]  Prefetch capacity: 0
+2023-07-07 11:28:33.220 parsl:706 2188 MainThread [INFO]  Heartbeat threshold: 120
+2023-07-07 11:28:33.220 parsl:707 2188 MainThread [INFO]  Heartbeat period: 30
+2023-07-07 11:28:33.220 parsl:708 2188 MainThread [INFO]  CPU affinity: none
+2023-07-07 11:28:33.220 parsl:709 2188 MainThread [INFO]  Accelerators: 
+2023-07-07 11:28:33.220 parsl:710 2188 MainThread [INFO]  Start method: fork
+2023-07-07 11:28:33.220 parsl:133 2188 MainThread [INFO]  Manager started
+2023-07-07 11:29:03.259 parsl:146 2188 MainThread [ERROR]  Caught exception while trying to determine viable address to interchange
+Traceback (most recent call last):
+  File "/mnt/media/anaconda3/envs/multisite/bin/process_worker_pool.py", line 138, in __init__
+    raise Exception("No viable address found")
+Exception: No viable address found

@@ -1,4 +1,4 @@
-import json, csv, sys, random, subprocess, requests, time, os
+import json, csv, sys, random, subprocess, requests, time
 
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
@@ -43,8 +43,7 @@ def SendData():
             print(e)
 
 def get_new_smile():
-        kafka_bootstrap = os.environ.get('KAFKA_BOOTSTRAP', 'localhost:9092')
-        consumer = KafkaConsumer('Recommend', bootstrap_servers=[kafka_bootstrap])
+        consumer = KafkaConsumer('Recommend', bootstrap_servers=['128.110.96.8:9092'])
         for msg in consumer:
                 return eval(str(msg.value))
 
@@ -74,9 +73,6 @@ if __name__ == "__main__":
         unsearched_mol = inchi_list
         model_id = 0        
         flag = 0
-        kafka_bootstrap = os.environ.get('KAFKA_BOOTSTRAP', 'localhost:9092')
-        producer = KafkaProducer(bootstrap_servers=[kafka_bootstrap], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-
         while len(unsearched_mol) > 0:
         #for i in range(5):
               if (flag==0):
@@ -92,6 +88,7 @@ if __name__ == "__main__":
               time.sleep(1)
               #smiles, ip_simulate = SimulationTask(inchi)
 
+              producer = KafkaProducer(bootstrap_servers=["128.110.96.8:9092"], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
               timestamp = int(time.time() * 1000)
               model_id = random.choice(range(1))
               #model_id = (model_id + 1) % 16

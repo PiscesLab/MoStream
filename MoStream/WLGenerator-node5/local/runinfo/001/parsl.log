@@ -1,0 +1,127 @@
+1688747371.031055 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:89 __init__ INFO: Starting DataFlowKernel with config
+Config(
+    app_cache=True, 
+    checkpoint_files=None, 
+    checkpoint_mode=None, 
+    checkpoint_period=None, 
+    executors=[HighThroughputExecutor(
+        address=None, 
+        address_probe_timeout=None, 
+        available_accelerators=[], 
+        block_error_handler=True, 
+        cores_per_worker=1.0, 
+        cpu_affinity='none', 
+        heartbeat_period=30, 
+        heartbeat_threshold=120, 
+        interchange_port_range=(55000, 56000), 
+        label='HighThroughputExecutor', 
+        launch_cmd='process_worker_pool.py {debug} {max_workers} -a {addresses} -p {prefetch_capacity} -c {cores_per_worker} -m {mem_per_worker} --poll {poll_period} --task_port={task_port} --result_port={result_port} --logdir={logdir} --block_id={{block_id}} --hb_period={heartbeat_period} {address_probe_timeout_string} --hb_threshold={heartbeat_threshold} --cpu-affinity {cpu_affinity} --available-accelerators {accelerators} --start-method {start_method}', 
+        max_workers=inf, 
+        mem_per_worker=None, 
+        poll_period=10, 
+        prefetch_capacity=0, 
+        provider=LocalProvider(
+            channel=LocalChannel(
+                envs={}, 
+                script_dir=None, 
+                userhome='/mnt/media/MDStream/WLGenerator/local'
+            ), 
+            cmd_timeout=30, 
+            init_blocks=1, 
+            launcher=SingleNodeLauncher(debug=True, fail_on_any=False), 
+            max_blocks=1, 
+            min_blocks=1, 
+            move_files=None, 
+            nodes_per_block=1, 
+            parallelism=1, 
+            worker_init=''
+        ), 
+        start_method='fork', 
+        storage_access=None, 
+        worker_debug=False, 
+        worker_logdir_root=None, 
+        worker_port_range=(54000, 55000), 
+        worker_ports=None, 
+        working_dir=None
+    )], 
+    garbage_collect=True, 
+    initialize_logging=True, 
+    internal_tasks_max_threads=10, 
+    max_idletime=120.0, 
+    monitoring=None, 
+    retries=0, 
+    retry_handler=None, 
+    run_dir='runinfo', 
+    strategy='simple', 
+    usage_tracking=False
+)
+1688747371.031229 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:91 __init__ INFO: Parsl version: 2023.03.27
+1688747371.031329 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.usage_tracking.usage:129 __init__ DEBUG: Tracking status: False
+1688747371.031477 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:119 __init__ INFO: Run id is: a7c3f447-2eec-422d-9f4d-c53829c9ee59
+1688747371.398800 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:126 __init__ DEBUG: Considering candidate for workflow name: /mnt/media/anaconda3/envs/multisite/lib/python3.9/site-packages/parsl/dataflow/dflow.py
+1688747371.398927 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:126 __init__ DEBUG: Considering candidate for workflow name: /mnt/media/anaconda3/envs/multisite/lib/python3.9/site-packages/typeguard/__init__.py
+1688747371.398979 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:126 __init__ DEBUG: Considering candidate for workflow name: /mnt/media/anaconda3/envs/multisite/lib/python3.9/site-packages/parsl/dataflow/dflow.py
+1688747371.399026 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:126 __init__ DEBUG: Considering candidate for workflow name: /mnt/media/anaconda3/envs/multisite/lib/python3.9/site-packages/typeguard/__init__.py
+1688747371.399072 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:126 __init__ DEBUG: Considering candidate for workflow name: /mnt/media/MDStream/WLGenerator/local/compute_ip_parsl_local.py
+1688747371.399121 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:132 __init__ DEBUG: Using compute_ip_parsl_local.py as workflow name
+1688747371.399388 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.memoization:174 __init__ INFO: App caching initialized
+1688747371.399489 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.strategy:134 __init__ DEBUG: Scaling strategy: simple
+1688747371.402203 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.high_throughput.executor:502 _start_queue_management_thread DEBUG: Starting queue management thread
+1688747371.402570 2023-07-07 11:29:31 MainProcess-2240 HTEX-Queue-Management-Thread-140703447373568 parsl.executors.high_throughput.executor:386 _queue_management_worker DEBUG: queue management worker starting
+1688747371.402704 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.high_throughput.executor:506 _start_queue_management_thread DEBUG: Started queue management thread
+1688747371.416674 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.high_throughput.executor:359 start DEBUG: Created management thread: <Thread(HTEX-Queue-Management-Thread, started daemon 140703447373568)>
+1688747371.416990 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.high_throughput.executor:332 initialize_scaling DEBUG: Launch command: process_worker_pool.py   -a node-1.jliu1721-161156.lsucloud-pg0.apt.emulab.net,127.0.0.1,128.110.96.17,192.168.1.2 -p 0 -c 1.0 -m None --poll 10 --task_port=54071 --result_port=54596 --logdir=/mnt/media/MDStream/WLGenerator/local/runinfo/001/HighThroughputExecutor --block_id={block_id} --hb_period=30  --hb_threshold=120 --cpu-affinity none --available-accelerators  --start-method fork
+1688747371.417050 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.high_throughput.executor:334 initialize_scaling DEBUG: Starting HighThroughputExecutor with provider:
+LocalProvider(
+    channel=LocalChannel(
+        envs={}, 
+        script_dir='/mnt/media/MDStream/WLGenerator/local/runinfo/001/submit_scripts', 
+        userhome='/mnt/media/MDStream/WLGenerator/local'
+    ), 
+    cmd_timeout=30, 
+    init_blocks=1, 
+    launcher=SingleNodeLauncher(debug=True, fail_on_any=False), 
+    max_blocks=1, 
+    min_blocks=1, 
+    move_files=None, 
+    nodes_per_block=1, 
+    parallelism=1, 
+    worker_init=''
+)
+1688747371.419109 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.status_handling:170 scale_out INFO: Scaling out by 1 blocks
+1688747371.419181 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.status_handling:173 scale_out INFO: Allocated block ID 0
+1688747371.419417 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.providers.local.local:217 submit DEBUG: Launching in remote mode
+1688747371.431711 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.status_handling:188 _launch_block DEBUG: Launched block 0 on executor HighThroughputExecutor with job ID 2267
+1688747371.432003 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.job_status_poller:122 add_executors DEBUG: Adding executor HighThroughputExecutor
+1688747371.436040 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1048 atexit_cleanup INFO: DFK cleanup because python process is exiting
+1688747371.436148 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1082 cleanup INFO: DFK cleanup initiated
+1688747371.436211 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:986 log_task_states INFO: Summary of tasks in DFK:
+1688747371.436330 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.unsched: 0
+1688747371.436389 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.pending: 0
+1688747371.436442 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.running: 0
+1688747371.436531 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.exec_done: 0
+1688747371.436588 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.failed: 0
+1688747371.436641 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.dep_fail: 0
+1688747371.436691 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.launched: 0
+1688747371.436741 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.fail_retryable: 0
+1688747371.436808 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.memo_done: 0
+1688747371.436870 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.joining: 0
+1688747371.436918 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:990 log_task_states INFO: Tasks in state States.running_ended: 0
+1688747371.436962 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:992 log_task_states INFO: End of summary
+1688747371.437102 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1106 cleanup INFO: Closing flowcontrol
+1688747371.437323 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1108 cleanup INFO: Terminated flow control
+1688747371.437379 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1110 cleanup INFO: Scaling in and shutting down executors
+1688747371.437447 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1115 cleanup INFO: Scaling in executor HighThroughputExecutor
+1688747371.437539 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.high_throughput.executor:663 scale_in DEBUG: Scale in called, blocks=1, block_ids=[]
+1688747371.437994 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.high_throughput.executor:679 scale_in DEBUG: Scale in selecting from 0 blocks
+1688747371.438065 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1125 cleanup INFO: Shutting down executor HighThroughputExecutor
+1688747371.438122 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.high_throughput.executor:724 shutdown INFO: Attempting HighThroughputExecutor shutdown
+1688747371.438221 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.high_throughput.executor:726 shutdown INFO: Finished HighThroughputExecutor shutdown attempt
+1688747371.438285 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1127 cleanup INFO: Shut down executor HighThroughputExecutor
+1688747371.438369 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1125 cleanup INFO: Shutting down executor _parsl_internal
+1688747371.438433 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.threads:97 shutdown DEBUG: Shutting down executor, which involves waiting for running tasks to complete
+1688747371.438520 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.executors.threads:99 shutdown DEBUG: Done with executor shutdown
+1688747371.438571 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1127 cleanup INFO: Shut down executor _parsl_internal
+1688747371.438619 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1131 cleanup INFO: Terminated executors
+1688747371.438686 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.dataflow.dflow:1148 cleanup INFO: DFK cleanup complete
+1688747371.438752 2023-07-07 11:29:31 MainProcess-2240 MainThread-140704928929600 parsl.process_loggers:28 wrapped DEBUG: Normal ending for cleanup on thread MainThread

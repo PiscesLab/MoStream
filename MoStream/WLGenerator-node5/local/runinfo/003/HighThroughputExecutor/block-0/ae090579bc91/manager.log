@@ -1,0 +1,33 @@
+2023-07-07 11:31:04.401 parsl:692 2524 MainThread [INFO]  Python version: 3.9.17 (main, Jul  5 2023, 20:41:20) 
+[GCC 11.2.0]
+2023-07-07 11:31:04.401 parsl:693 2524 MainThread [INFO]  Debug logging: False
+2023-07-07 11:31:04.401 parsl:694 2524 MainThread [INFO]  Log dir: /mnt/media/MDStream/WLGenerator/local/runinfo/003/HighThroughputExecutor
+2023-07-07 11:31:04.401 parsl:695 2524 MainThread [INFO]  Manager ID: ae090579bc91
+2023-07-07 11:31:04.401 parsl:696 2524 MainThread [INFO]  Block ID: 0
+2023-07-07 11:31:04.402 parsl:697 2524 MainThread [INFO]  cores_per_worker: 1.0
+2023-07-07 11:31:04.402 parsl:698 2524 MainThread [INFO]  mem_per_worker: None
+2023-07-07 11:31:04.402 parsl:699 2524 MainThread [INFO]  task_port: 54242
+2023-07-07 11:31:04.402 parsl:700 2524 MainThread [INFO]  result_port: 54641
+2023-07-07 11:31:04.402 parsl:701 2524 MainThread [INFO]  addresses: 127.0.0.1,128.110.96.17,node-1.jliu1721-161156.lsucloud-pg0.apt.emulab.net,192.168.1.2
+2023-07-07 11:31:04.402 parsl:702 2524 MainThread [INFO]  max_workers: inf
+2023-07-07 11:31:04.402 parsl:703 2524 MainThread [INFO]  poll_period: 10
+2023-07-07 11:31:04.402 parsl:704 2524 MainThread [INFO]  address_probe_timeout: 30
+2023-07-07 11:31:04.402 parsl:705 2524 MainThread [INFO]  Prefetch capacity: 0
+2023-07-07 11:31:04.402 parsl:706 2524 MainThread [INFO]  Heartbeat threshold: 120
+2023-07-07 11:31:04.402 parsl:707 2524 MainThread [INFO]  Heartbeat period: 30
+2023-07-07 11:31:04.402 parsl:708 2524 MainThread [INFO]  CPU affinity: none
+2023-07-07 11:31:04.402 parsl:709 2524 MainThread [INFO]  Accelerators: 
+2023-07-07 11:31:04.402 parsl:710 2524 MainThread [INFO]  Start method: fork
+2023-07-07 11:31:04.402 parsl:133 2524 MainThread [INFO]  Manager started
+2023-07-07 11:31:04.404 parsl.executors.high_throughput.probe:47 2524 MainThread [INFO]  Connected to interchange on 127.0.0.1
+2023-07-07 11:31:04.405 parsl:140 2524 MainThread [INFO]  Connection to Interchange successful on 127.0.0.1
+2023-07-07 11:31:04.405 parsl:143 2524 MainThread [INFO]  Task url : tcp://127.0.0.1:54242
+2023-07-07 11:31:04.405 parsl:144 2524 MainThread [INFO]  Result url : tcp://127.0.0.1:54641
+2023-07-07 11:31:04.405 parsl:162 2524 MainThread [INFO]  Manager connected to interchange
+2023-07-07 11:31:04.406 parsl:218 2524 MainThread [INFO]  Manager will spawn 16 workers
+2023-07-07 11:31:04.437 parsl:258 2524 Task-Puller [INFO]  starting
+2023-07-07 11:31:04.439 parsl:456 2524 MainThread [INFO]  Loop start
+2023-07-07 11:31:34.441 parsl:354 2524 Result-Pusher [INFO]  Sending heartbeat via results connection: last_result_beat=1688747464.438734 heartbeat_period=30 seconds
+2023-07-07 11:32:04.447 parsl:354 2524 Result-Pusher [INFO]  Sending heartbeat via results connection: last_result_beat=1688747494.4413908 heartbeat_period=30 seconds
+2023-07-07 11:32:34.457 parsl:354 2524 Result-Pusher [INFO]  Sending heartbeat via results connection: last_result_beat=1688747524.4473917 heartbeat_period=30 seconds
+2023-07-07 11:33:04.464 parsl:354 2524 Result-Pusher [INFO]  Sending heartbeat via results connection: last_result_beat=1688747554.4574351 heartbeat_period=30 seconds

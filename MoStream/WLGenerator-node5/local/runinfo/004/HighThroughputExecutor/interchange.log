@@ -1,0 +1,10 @@
+2023-07-07 11:34:20.804 interchange:137 HTEX-Interchange(2856) MainThread __init__ [INFO]  Attempting connection to client at 127.0.0.1 on ports: 55933,55530,55260
+2023-07-07 11:34:20.806 interchange:149 HTEX-Interchange(2856) MainThread __init__ [INFO]  Connected to client
+2023-07-07 11:34:20.806 interchange:180 HTEX-Interchange(2856) MainThread __init__ [INFO]  Bound to ports 54975,54956 for incoming worker connections
+2023-07-07 11:34:20.806 interchange:195 HTEX-Interchange(2856) MainThread __init__ [INFO]  Platform info: {'parsl_v': '2023.03.27', 'python_v': '3.9.17', 'os': 'Linux', 'hostname': 'node-1.jliu1721-161156.lsucloud-pg0.apt.emulab.net', 'dir': '/mnt/media/MDStream/WLGenerator/local'}
+2023-07-07 11:34:20.807 interchange:345 HTEX-Interchange(2856) MainThread start [INFO]  Incoming ports bound
+2023-07-07 11:34:20.810 interchange:226 HTEX-Interchange(2856) Interchange-Task-Puller task_puller [INFO]  Starting
+2023-07-07 11:34:21.314 interchange:413 HTEX-Interchange(2856) MainThread process_task_outgoing_incoming [INFO]  Adding manager: b'e42ebcb2dd70' to ready queue
+2023-07-07 11:34:21.315 interchange:416 HTEX-Interchange(2856) MainThread process_task_outgoing_incoming [INFO]  Registration info for manager b'e42ebcb2dd70': {'parsl_v': '2023.03.27', 'python_v': '3.9.17', 'worker_count': 16, 'uid': 'e42ebcb2dd70', 'block_id': '0', 'prefetch_capacity': 0, 'max_capacity': 16, 'os': 'Linux', 'hostname': 'node-1.jliu1721-161156.lsucloud-pg0.apt.emulab.net', 'dir': '/mnt/media/MDStream/WLGenerator/local', 'cpu_count': 16, 'total_memory': 67504029696}
+2023-07-07 11:34:21.315 interchange:434 HTEX-Interchange(2856) MainThread process_task_outgoing_incoming [INFO]  Manager b'e42ebcb2dd70' has compatible Parsl version 2023.03.27
+2023-07-07 11:34:21.315 interchange:435 HTEX-Interchange(2856) MainThread process_task_outgoing_incoming [INFO]  Manager b'e42ebcb2dd70' has compatible Python version 3.9

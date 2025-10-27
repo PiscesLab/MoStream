@@ -55,8 +55,7 @@ def SendData():
             print(e)
 
 def get_new_smile():
-        kafka_bootstrap = os.environ.get('KAFKA_BOOTSTRAP', 'localhost:9092')
-        consumer = KafkaConsumer('Recommend', bootstrap_servers=[kafka_bootstrap])
+        consumer = KafkaConsumer('Recommend', bootstrap_servers=['128.110.96.15:9092'])
         for msg in consumer:
                 return eval(str(msg.value))
 
@@ -93,8 +92,7 @@ if __name__ == "__main__":
               time.sleep(3)
               #smiles, ip_simulate = SimulationTask(inchi)
 
-              kafka_bootstrap = os.environ.get('KAFKA_BOOTSTRAP', 'localhost:9092')
-              producer = KafkaProducer(bootstrap_servers=[kafka_bootstrap], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+              producer = KafkaProducer(bootstrap_servers=["128.110.96.15:9092"], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
               timestamp = int(time.time() * 1000)
               model_id = random.choice(range(8))
               data = {"timestamp": timestamp, "smiles": smiles_train, "IP_simulate": ip_train, "model_id": model_id}

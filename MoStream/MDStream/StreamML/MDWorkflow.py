@@ -1,5 +1,5 @@
-import argparse, logging, sys, json, time, os
-from pathlib import Path
+import argparse, logging, sys, json, time
+
 from pyflink.common import WatermarkStrategy, Encoder, Types, Time
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.datastream.window import CountWindow, CountTumblingWindowAssigner
@@ -10,11 +10,6 @@ from pyflink.datastream.formats.json import JsonRowSerializationSchema, JsonRowD
 from NPMMModel import TrainFunction 
 from Inference import InferFunction
 from Ranking import RankFunction
-#from .gitinfo import get_git_info            # relative import
-# or
-#from .moldesign.utils.gitinfo import get_git_info
-import statistics
-import argparse
 
 def average(weight_str1, weight_str2):
     list1 = [i for i in weight_str1.split(";")]
@@ -27,61 +22,23 @@ def average(weight_str1, weight_str2):
     average_list = [(x + y) / 2 for x, y in zip(list1, list2)]
     return average_list
 
-def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
+def workflow():
     env = StreamExecutionEnvironment.get_execution_environment()
-
-    # --- JARs: use URIs (handles spaces automatically)
-    jars_dir = Path(__file__).resolve().parents[3] / "jars"
-    kafka_connector = (jars_dir / "flink-connector-kafka-4.0.1-2.0.jar").as_uri()
-    kafka_clients   = (jars_dir / "kafka-clients-3.6.1.jar").as_uri()
-    env.add_jars(kafka_connector, kafka_clients)
-
-    # --- Python files: use a NORMAL PATH (no file://, no %20)
-    # add the current StreamML package directory (where this file lives)
-    streamml_dir = Path(__file__).resolve().parent
-    env.add_python_file(str(streamml_dir))  # <-- plain path
-
+    env.add_jars("file:///mnt/media/MDStream/StreamML/flink-sql-connector-kafka-1.17.1.jar")
+    env.add_python_file("file:///mnt/media/MDStream/StreamML")
     env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
     
     # Configure the KafkaSource (consumer)
-    if local_mode:
-        # use an in-memory collection for local testing
-        sample_messages = [json.dumps({"smiles": "CCO", "IP_simulate": 12.34, "model_id": 0}),
-                           json.dumps({"smiles": "CCC", "IP_simulate": 11.11, "model_id": 0})]
-        source_stream = env.from_collection(sample_messages, type_info=Types.STRING())
-    else:
-        # allow the outer scope to provide desired starting offsets and group id via env vars
-        starting = os.environ.get('KAFKA_STARTING_OFFSETS', 'latest')
-        group_id = os.environ.get('KAFKA_GROUP_ID', 'my-group')
-        if starting == 'earliest':
-            offsets = KafkaOffsetsInitializer.earliest()
-        else:
-            offsets = KafkaOffsetsInitializer.latest()
-
-        kafka_source = KafkaSource.builder() \
-          .set_bootstrap_servers(kafka_bootstrap) \
-      .set_group_id(group_id) \
+    kafka_source = KafkaSource.builder() \
+      .set_bootstrap_servers('128.110.96.8:9092') \
+      .set_group_id('my-group') \
       .set_topics("Simulation") \
-      .set_starting_offsets(offsets) \
+      .set_starting_offsets(KafkaOffsetsInitializer.latest()) \
       .set_value_only_deserializer(SimpleStringSchema()) \
       .build() 
-    # --- Sink (producer)
-    sink = KafkaSink.builder() \
-    .set_bootstrap_servers(kafka_bootstrap) \
-    .set_record_serializer(
-        KafkaRecordSerializationSchema.builder()
-            .set_topic("Result")
-            .set_value_serialization_schema(SimpleStringSchema())
-            .build()
-    ) \
-    .set_delivery_guarantee(DeliveryGuarantee.AT_LEAST_ONCE) \
-    .build()
 
-    # Add the source to the Flink pipeline
-    if local_mode:
-        stream = source_stream
-    else:
-        stream = env.from_source(kafka_source, WatermarkStrategy.no_watermarks(), "Source-data")
+    # Add the Kafka source as a data source to the Flink pipeline
+    stream = env.from_source(kafka_source, WatermarkStrategy.no_watermarks(), "Source-data")
 
     # Parse the JSON stream and extract desired fields
     extracted_stream = stream.map(lambda value: json.loads(value)).name("LoadJSON") \
@@ -124,7 +81,7 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
 
     # Configure the KafkaSink (producer)
     sink = KafkaSink.builder() \
-      .set_bootstrap_servers("localhost:9092") \
+      .set_bootstrap_servers('128.110.96.8:9092') \
       .set_record_serializer(
         KafkaRecordSerializationSchema.builder()
             .set_topic("Result")
@@ -142,13 +99,4 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     env.execute("MDStream")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--kafka-bootstrap', default='localhost:9092', help='Kafka bootstrap servers')
-    parser.add_argument('--local', action='store_true', help='Run pipeline with an in-memory local source (no Kafka)')
-    parser.add_argument('--starting-offset', choices=['earliest','latest'], default='latest', help='Kafka starting offset')
-    parser.add_argument('--group-id', default='my-group', help='Kafka consumer group id')
-    args = parser.parse_args()
-    # expose starting offset and group id via env vars used by the KafkaSource builder
-    os.environ['KAFKA_STARTING_OFFSETS'] = args.starting_offset
-    os.environ['KAFKA_GROUP_ID'] = args.group_id
-    workflow(kafka_bootstrap=args.kafka_bootstrap, local_mode=args.local)
+    workflow()

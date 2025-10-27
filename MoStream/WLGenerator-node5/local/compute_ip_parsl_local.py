@@ -26,8 +26,7 @@ from rdkit import Chem
 import logging
 
 def SendData(data):
-    kafka_bootstrap = os.environ.get('KAFKA_BOOTSTRAP', 'localhost:9092')
-    producer = KafkaProducer(bootstrap_servers=[kafka_bootstrap], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+        producer = KafkaProducer(bootstrap_servers=["128.110.96.15:9092"], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
         future = producer.send('Simulation', data)
         try:
             record_metadata = future.get(timeout=10)
