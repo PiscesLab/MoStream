@@ -1,6 +1,16 @@
-WLGenerator-node2/
+# Ignore heavy folders
+MoStream/WLGenerator-node1/
+MoStream/WLGenerator-node5/
+
+# Ignore large files in MDStream
+MoStream/MDStream/StreamML/search_space/MOS-search-simple.txt
+MoStream/MDStream/WLGenerator/dataset/training-data.json
+MoStream/MDStream/WLGenerator/search_space/MOS-search.csv
+
+# Python + IDE junk
 __pycache__/
 *.pyc
 .env
 .vscode/
 .ipynb_checkpoints/
+

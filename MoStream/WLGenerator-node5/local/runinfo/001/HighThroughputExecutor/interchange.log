@@ -1,6 +1,0 @@
-2023-07-07 11:29:31.411 interchange:137 HTEX-Interchange(2260) MainThread __init__ [INFO]  Attempting connection to client at 127.0.0.1 on ports: 55250,55026,55123
-2023-07-07 11:29:31.413 interchange:149 HTEX-Interchange(2260) MainThread __init__ [INFO]  Connected to client
-2023-07-07 11:29:31.413 interchange:180 HTEX-Interchange(2260) MainThread __init__ [INFO]  Bound to ports 54071,54596 for incoming worker connections
-2023-07-07 11:29:31.414 interchange:195 HTEX-Interchange(2260) MainThread __init__ [INFO]  Platform info: {'parsl_v': '2023.03.27', 'python_v': '3.9.17', 'os': 'Linux', 'hostname': 'node-1.jliu1721-161156.lsucloud-pg0.apt.emulab.net', 'dir': '/mnt/media/MDStream/WLGenerator/local'}
-2023-07-07 11:29:31.414 interchange:345 HTEX-Interchange(2260) MainThread start [INFO]  Incoming ports bound
-2023-07-07 11:29:31.418 interchange:226 HTEX-Interchange(2260) Interchange-Task-Puller task_puller [INFO]  Starting
