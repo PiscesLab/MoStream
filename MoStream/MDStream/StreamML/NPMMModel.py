@@ -89,14 +89,16 @@ class TrainFunction(KeyedProcessFunction):
 
         # Make a copy of the model
         if (self.model_paras is None):
-           model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)
+           #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)  # CloudLab NFS path
            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
+           model = tf.keras.models.load_model("/home/namdo/applications/MoStream/MoStream/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)
            config = model.get_config()
            model = tf.keras.Model.from_config(config, custom_objects=custom_objects)
            infra_json_str = model.to_json()
         else:
-           model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)
+           #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)  # CloudLab NFS path
            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
+           model = tf.keras.models.load_model("/home/namdo/applications/MoStream/MoStream/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)
            config = model.get_config()
            model = tf.keras.Model.from_config(config, custom_objects=custom_objects)
            infra_json_str = model.to_json()
