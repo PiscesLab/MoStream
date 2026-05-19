@@ -1,4 +1,4 @@
-[200~MoStream/**/runinfo/
+MoStream/**/runinfo/
 MoStream/**/local/runinfo/
 MoStream/**/search_space/runinfo/
 MoStream/**/submit_scripts/*.sh.out
@@ -7,3 +7,14 @@ MoStream/**/submit_scripts/*.sh.out
 MoStream/MDStream/WLGenerator/search_space/MOS-search.csv
 MoStream/MDStream/StreamML/search_space/MOS-search-simple.txt
 MoStream/MDStream/WLGenerator/dataset/training-data.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# macOS
+__MACOSX/
+.DS_Store
+
+# Local-only files (never publish)
