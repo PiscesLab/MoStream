@@ -57,7 +57,7 @@ def main():
         print("Dataset parsed but empty")
         return
 
-    producer = KafkaProducer(bootstrap_servers=[KAFKA], value_serializer=lambda v: json.dumps(v).encode())
+    producer = KafkaProducer(bootstrap_servers=[KAFKA], value_serializer=lambda v: json.dumps(v).encode(), api_version=(0, 10, 1))
     for i in range(min(args.count, len(smiles))):
         idx = i % len(smiles)
         msg = {"timestamp": int(time.time() * 1000), "smiles": smiles[idx], "inchi": inchis[idx], "IP_simulate": ips[idx], "model_id": 0}

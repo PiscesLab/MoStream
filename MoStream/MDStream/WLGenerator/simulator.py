@@ -6,10 +6,6 @@ from kafka import KafkaConsumer
 from threading import Timer
 from subprocess import call, check_output
 
-from moldesign.simulate.functions import generate_inchi_and_xyz, relax_structure
-from moldesign.simulate.specs import get_qcinput_specification
-from moldesign.store.models import MoleculeData
-from moldesign.store.recipes import apply_recipes
 from rdkit import Chem
 logger = logging.getLogger("qcengine")
 logger.setLevel(logging.CRITICAL)
@@ -66,6 +62,10 @@ def get_new_smile(kafka_bootstrap='localhost:9092'):
                 return msg.value
 
 def SimulationTask(inchi):
+        from moldesign.simulate.functions import generate_inchi_and_xyz, relax_structure
+        from moldesign.simulate.specs import get_qcinput_specification
+        from moldesign.store.models import MoleculeData
+        from moldesign.store.recipes import apply_recipes
         mol = Chem.MolFromInchi(inchi)
         smiles = Chem.MolToSmiles(mol)
         inchi, xyz = generate_inchi_and_xyz(smiles)

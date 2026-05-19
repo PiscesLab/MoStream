@@ -23,11 +23,23 @@ class TrainFunction(KeyedProcessFunction):
         self.learning_rate = 1e-3
         self.random_state = 1
         self.model_paras = None
-        print("finished init") 
+        self.model = None        # loaded once in open(), reused every iteration
+        self.infra_json_str = None
+        print("finished init")
 
     def open(self, runtime_context: RuntimeContext):
         print("train reach open")
         self.state = runtime_context.get_state(ValueStateDescriptor('training_dataset', Types.LIST(Types.STRING())))
+        # Load model once here so clear_session() between iterations cannot corrupt it
+        custom_objects = nfp.custom_objects.copy()
+        custom_objects['ReduceAtoms'] = ReduceAtoms
+        self.model = tf.keras.models.load_model(
+            "/home/namdo/applications/MoStream/MoStream/MDStream/StreamML/networks/model.h5",
+            #"/mnt/media/MDStream/StreamML/networks/model.h5",  # CloudLab NFS path
+            custom_objects=custom_objects,
+            compile=True,
+        )
+        self.infra_json_str = self.model.to_json()
         print("train finished open")
   
     def process_element(self, new_tuple, ctx: 'KeyedProcessFunction.Context') -> List:
@@ -88,24 +100,22 @@ class TrainFunction(KeyedProcessFunction):
         custom_objects['ReduceAtoms'] = ReduceAtoms
 
         # Make a copy of the model
+        # Note: from_config() was removed — after clear_session() it rebuilds with fewer weights
+        # than the trained model saved in self.model_paras, causing set_weights() to fail.
+        # load_model() always produces a consistent architecture.
         if (self.model_paras is None):
            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)  # CloudLab NFS path
            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
            model = tf.keras.models.load_model("/home/namdo/applications/MoStream/MoStream/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)
-           config = model.get_config()
-           model = tf.keras.Model.from_config(config, custom_objects=custom_objects)
            infra_json_str = model.to_json()
         else:
            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)  # CloudLab NFS path
            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
            model = tf.keras.models.load_model("/home/namdo/applications/MoStream/MoStream/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)
-           config = model.get_config()
-           model = tf.keras.Model.from_config(config, custom_objects=custom_objects)
            infra_json_str = model.to_json()
            weights_list = json.loads(self.model_paras)
            weights = [np.array(arr) for arr in weights_list]
            model.set_weights(weights)
-           #model = tf.keras.models.model_from_json(self.model_paras, custom_objects=custom_objects)
 
         try:
             scaler_layer = model.get_layer('scale')
