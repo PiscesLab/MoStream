@@ -1,4 +1,4 @@
-import nfp, random, json
+import nfp, random, json, h5py
 import tensorflow as tf
 import numpy as np
 import pickle as pkl
@@ -30,16 +30,19 @@ class TrainFunction(KeyedProcessFunction):
     def open(self, runtime_context: RuntimeContext):
         print("train reach open")
         self.state = runtime_context.get_state(ValueStateDescriptor('training_dataset', Types.LIST(Types.STRING())))
-        # Load model once here so clear_session() between iterations cannot corrupt it
+        # Load architecture-only from h5 — weights are skipped because the h5 was saved
+        # with an older nfp where EdgeUpdate had 10 weights; current nfp 0.3.12 builds it
+        # with 4. Loading weights would crash. The model trains from scratch on each batch.
+        model_path = "/home/namdo/applications/MoStream/MoStream/MDStream/StreamML/networks/model.h5"
+        #model_path = "/mnt/media/MDStream/StreamML/networks/model.h5"  # CloudLab NFS path
         custom_objects = nfp.custom_objects.copy()
         custom_objects['ReduceAtoms'] = ReduceAtoms
-        self.model = tf.keras.models.load_model(
-            "/home/namdo/applications/MoStream/MoStream/MDStream/StreamML/networks/model.h5",
-            #"/mnt/media/MDStream/StreamML/networks/model.h5",  # CloudLab NFS path
-            custom_objects=custom_objects,
-            compile=True,
-        )
-        self.infra_json_str = self.model.to_json()
+        with h5py.File(model_path, 'r') as f:
+            model_config = f.attrs['model_config']
+            if isinstance(model_config, bytes):
+                model_config = model_config.decode('utf-8')
+        self.model = tf.keras.models.model_from_json(model_config, custom_objects=custom_objects)
+        self.infra_json_str = model_config
         print("train finished open")
   
     def process_element(self, new_tuple, ctx: 'KeyedProcessFunction.Context') -> List:
@@ -90,32 +93,30 @@ class TrainFunction(KeyedProcessFunction):
            #print("result_list", result)
            return result
 
+        if len(train_X) == 0 or len(valid_X) == 0:
+           print(f"Skipping training: train_X={len(train_X)}, valid_X={len(valid_X)} after split")
+           result = [str(model_id) + "$"+ "haaah" + "$" + str(model_id) + "$" + "haaah"]
+           return result
+
         # Make the loaders
-        steps_per_epoch = len(train_X) // self.batch_size
-        train_loader = make_data_loader(train_X, train_y, repeat=True, batch_size=self.batch_size, max_size=max_size, drop_last_batch=True, shuffle_buffer=32768)
-        valid_steps = len(valid_X) // self.batch_size
-        valid_loader = make_data_loader(valid_X, valid_y, batch_size=self.batch_size, max_size=max_size, drop_last_batch=True)
+        # Use max(1, ...) so steps_per_epoch is never 0 when sample count < batch_size
+        train_batch = min(self.batch_size, len(train_X))
+        valid_batch = min(self.batch_size, len(valid_X))
+        steps_per_epoch = 1
+        train_loader = make_data_loader(train_X, train_y, repeat=True, batch_size=train_batch, max_size=max_size, drop_last_batch=False, shuffle_buffer=32768)
+        valid_steps = 1
+        valid_loader = make_data_loader(valid_X, valid_y, batch_size=valid_batch, max_size=max_size, drop_last_batch=False)
 
-        custom_objects = nfp.custom_objects.copy()
-        custom_objects['ReduceAtoms'] = ReduceAtoms
+        # Reuse model loaded once in open() — avoids weight mismatch from clear_session()
+        # resetting TF layer state between iterations.
+        model = self.model
+        infra_json_str = self.infra_json_str
 
-        # Make a copy of the model
-        # Note: from_config() was removed — after clear_session() it rebuilds with fewer weights
-        # than the trained model saved in self.model_paras, causing set_weights() to fail.
-        # load_model() always produces a consistent architecture.
-        if (self.model_paras is None):
-           #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)  # CloudLab NFS path
-           #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
-           model = tf.keras.models.load_model("/home/namdo/applications/MoStream/MoStream/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)
-           infra_json_str = model.to_json()
-        else:
-           #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)  # CloudLab NFS path
-           #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
-           model = tf.keras.models.load_model("/home/namdo/applications/MoStream/MoStream/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)
-           infra_json_str = model.to_json()
-           weights_list = json.loads(self.model_paras)
-           weights = [np.array(arr) for arr in weights_list]
-           model.set_weights(weights)
+        # Restore weights from previous training iteration
+        if self.model_paras is not None:
+            weights_list = json.loads(self.model_paras)
+            weights = [np.array(arr) for arr in weights_list]
+            model.set_weights(weights)
 
         try:
             scaler_layer = model.get_layer('scale')
@@ -148,7 +149,7 @@ class TrainFunction(KeyedProcessFunction):
             epochs=self.num_epochs,
             shuffle=False,
             verbose=False,
-            steps_per_epoch=len(train_X),
+            steps_per_epoch=steps_per_epoch,
             validation_data=valid_loader,
             validation_steps=valid_steps,
             validation_freq=1
@@ -182,8 +183,6 @@ class TrainFunction(KeyedProcessFunction):
         weights_json_str = json.dumps(weights)
         # Update model parameters state
         self.model_paras = weights_json_str
-        # Once we are finished training call "clear_session"
-        tf.keras.backend.clear_session()
         chunk_id = random.choice(range(2231))
         result = [str(chunk_id) + "$"+ weights_json_str + "$" + str(model_id) + "$" + infra_json_str]
         return result
