@@ -11,6 +11,10 @@ conda activate "$CONDA_ENV"
 
 cd "$HOME/MoStream/MoStream/MDStream/StreamML"
 
+# Clean __pycache__ so they are not included in the distributed Python files,
+# which causes FileAlreadyExistsException when multiple tasks extract concurrently.
+find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+
 echo "=== Submitting PyFlink job to cluster ==="
 "$HOME/flink/bin/flink" run \
   -py MDWorkflow.py \
