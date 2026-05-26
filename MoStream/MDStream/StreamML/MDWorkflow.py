@@ -1,6 +1,6 @@
 import argparse, logging, sys, json, time, os
 from pathlib import Path
-from pyflink.common import WatermarkStrategy, Encoder, Types, Time
+from pyflink.common import WatermarkStrategy, Encoder, Types, Time, Configuration
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.datastream.window import CountWindow, CountTumblingWindowAssigner
 from pyflink.datastream.connectors.kafka import KafkaSource, KafkaSink, KafkaOffsetsInitializer, KafkaTopicPartition, KafkaRecordSerializationSchema
@@ -28,7 +28,11 @@ def average(weight_str1, weight_str2):
     return average_list
 
 def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
-    env = StreamExecutionEnvironment.get_execution_environment()
+    config = Configuration()
+    config.set_string("taskmanager.memory.network.min", "512m")
+    config.set_string("taskmanager.memory.network.max", "2g")
+    config.set_string("taskmanager.memory.network.fraction", "0.2")
+    env = StreamExecutionEnvironment.get_execution_environment(config)
 
     # --- JARs: use URIs (handles spaces automatically)
     jars_dir = Path(__file__).resolve().parents[3] / "jars"
