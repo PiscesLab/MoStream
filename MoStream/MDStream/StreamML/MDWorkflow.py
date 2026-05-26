@@ -27,32 +27,47 @@ def average(weight_str1, weight_str2):
     average_list = [(x + y) / 2 for x, y in zip(list1, list2)]
     return average_list
 
-def workflow(kafka_bootstrap='localhost:9092', local_mode=False, jm_host=None, jm_port=6123):
+def _fix_add_jars():
+    import ast as _ast
+    from pyflink.datastream.stream_execution_environment import StreamExecutionEnvironment as _E
+    _orig = _E.add_jars
+
+    def _patched(self, *jars_path):
+        from pyflink.java_gateway import get_gateway as _gw
+        jvm = _gw().jvm
+        key = jvm.org.apache.flink.configuration.PipelineOptions.JARS.key()
+        cfg = jvm.org.apache.flink.python.util.PythonConfigUtil \
+            .getEnvironmentConfig(self._j_stream_execution_environment)
+        old = cfg.getString(key, None)
+        if old and old.strip().startswith('['):
+            # Java stores pipeline.jars as YAML list: ['file:/a.jar', 'file:/b.jar']
+            # add_jars() prepends it verbatim → broken URL ['file:/...'];file:/...
+            # Parse and rewrite as semicolon-separated before appending new jars.
+            try:
+                old = ';'.join(_ast.literal_eval(old.strip()))
+            except Exception:
+                old = old.strip()[1:-1].replace("', '", ';') \
+                          .replace("'", '').replace('"', '').strip()
+            cfg.setString(key, old)
+        _orig(self, *jars_path)
+
+    _E.add_jars = _patched
+
+_fix_add_jars()
+
+
+def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     config = Configuration()
     config.set_string("taskmanager.memory.network.min", "512m")
     config.set_string("taskmanager.memory.network.max", "2g")
     config.set_string("taskmanager.memory.network.fraction", "0.2")
+    env = StreamExecutionEnvironment.get_execution_environment(config)
 
-    # --- JARs: plain paths for create_remote_execution_environment,
-    #     URIs for add_jars (local/MiniCluster path)
+    # --- JARs: use URIs (handles spaces automatically)
     jars_dir = Path(__file__).resolve().parents[3] / "jars"
-    kafka_connector_path = str(jars_dir / "flink-connector-kafka-4.0.1-2.0.jar")
-    kafka_clients_path   = str(jars_dir / "kafka-clients-3.6.1.jar")
-
-    if jm_host and not local_mode:
-        # Use create_remote_execution_environment to avoid PyFlink 2.0 bug where
-        # add_jars() serializes the JAR list as a Python string with brackets,
-        # causing MalformedURLException: no protocol: ['file:/...']
-        env = StreamExecutionEnvironment.create_remote_execution_environment(
-            jm_host, jm_port,
-            kafka_connector_path, kafka_clients_path,
-            configuration=config
-        )
-    else:
-        env = StreamExecutionEnvironment.get_execution_environment(config)
-        kafka_connector = (jars_dir / "flink-connector-kafka-4.0.1-2.0.jar").as_uri()
-        kafka_clients   = (jars_dir / "kafka-clients-3.6.1.jar").as_uri()
-        env.add_jars(kafka_connector, kafka_clients)
+    kafka_connector = (jars_dir / "flink-connector-kafka-4.0.1-2.0.jar").as_uri()
+    kafka_clients   = (jars_dir / "kafka-clients-3.6.1.jar").as_uri()
+    env.add_jars(kafka_connector, kafka_clients)
 
     # --- Python files: use a NORMAL PATH (no file://, no %20)
     # add the current StreamML package directory (where this file lives)
@@ -165,11 +180,8 @@ if __name__ == '__main__':
     parser.add_argument('--local', action='store_true', help='Run pipeline with an in-memory local source (no Kafka)')
     parser.add_argument('--starting-offset', choices=['earliest','latest'], default='latest', help='Kafka starting offset')
     parser.add_argument('--group-id', default='my-group', help='Kafka consumer group id')
-    parser.add_argument('--jm-host', default=None, help='Flink JobManager hostname for remote submission (bypasses flink run JAR bug)')
-    parser.add_argument('--jm-port', type=int, default=6123, help='Flink JobManager RPC port')
     args = parser.parse_args()
     # expose starting offset and group id via env vars used by the KafkaSource builder
     os.environ['KAFKA_STARTING_OFFSETS'] = args.starting_offset
     os.environ['KAFKA_GROUP_ID'] = args.group_id
-    workflow(kafka_bootstrap=args.kafka_bootstrap, local_mode=args.local,
-             jm_host=args.jm_host, jm_port=args.jm_port)
+    workflow(kafka_bootstrap=args.kafka_bootstrap, local_mode=args.local)
