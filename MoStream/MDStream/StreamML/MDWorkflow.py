@@ -59,8 +59,7 @@ _fix_add_jars()
 def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     config = Configuration()
     config.set_string("taskmanager.memory.network.min", "512m")
-    config.set_string("taskmanager.memory.network.max", "2g")
-    config.set_string("taskmanager.memory.network.fraction", "0.2")
+    config.set_string("taskmanager.memory.network.max", "512m")
     env = StreamExecutionEnvironment.get_execution_environment(config)
 
     # --- JARs: use URIs (handles spaces automatically)
