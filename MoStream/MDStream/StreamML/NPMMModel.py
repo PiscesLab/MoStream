@@ -1,4 +1,4 @@
-import nfp, random, json
+import nfp, random, json, os
 import tensorflow as tf
 import numpy as np
 import pickle as pkl
@@ -78,11 +78,13 @@ class TrainFunction(KeyedProcessFunction):
            #print("result_list", result)
            return result
 
-        # Make the loaders
-        steps_per_epoch = len(train_X) // self.batch_size
-        train_loader = make_data_loader(train_X, train_y, repeat=True, batch_size=self.batch_size, max_size=max_size, drop_last_batch=True, shuffle_buffer=32768)
-        valid_steps = len(valid_X) // self.batch_size
-        valid_loader = make_data_loader(valid_X, valid_y, batch_size=self.batch_size, max_size=max_size, drop_last_batch=True)
+        # Make the loaders — use actual dataset size as batch_size if smaller than
+        # self.batch_size to avoid steps_per_epoch=0 after train/valid split
+        loader_batch = min(self.batch_size, len(train_X), max(1, len(valid_X)))
+        steps_per_epoch = max(1, len(train_X) // loader_batch)
+        train_loader = make_data_loader(train_X, train_y, repeat=True, batch_size=loader_batch, max_size=max_size, drop_last_batch=False, shuffle_buffer=32768)
+        valid_steps = max(1, len(valid_X) // loader_batch)
+        valid_loader = make_data_loader(valid_X, valid_y, batch_size=loader_batch, max_size=max_size, drop_last_batch=False)
 
         custom_objects = nfp.custom_objects.copy()
         custom_objects['ReduceAtoms'] = ReduceAtoms
