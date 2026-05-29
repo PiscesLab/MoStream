@@ -86,9 +86,29 @@ class TrainFunction(KeyedProcessFunction):
 
         custom_objects = nfp.custom_objects.copy()
         custom_objects['ReduceAtoms'] = ReduceAtoms
+        if hasattr(nfp, 'GlobalUpdate'):  custom_objects['GlobalUpdate']  = nfp.GlobalUpdate
+        if hasattr(nfp, 'EdgeUpdate'):    custom_objects['EdgeUpdate']    = nfp.EdgeUpdate
+        if hasattr(nfp, 'NodeUpdate'):    custom_objects['NodeUpdate']    = nfp.NodeUpdate
+        if hasattr(nfp, 'ConcatDense'):   custom_objects['ConcatDense']   = nfp.ConcatDense
+
+        # Set MOSTREAM_SKIP_PRETRAINED=1 to bypass loading model.h5 weights and use
+        # random init instead. Needed when nfp version mismatch causes weight count
+        # error (saved with nfp 0.0.x/TF1 where EdgeUpdate had 10 weights; current
+        # nfp has 4). Weights will still update correctly from streaming training data.
+        skip_pretrained = os.environ.get("MOSTREAM_SKIP_PRETRAINED", "0") == "1"
 
         # Make a copy of the model
-        if (self.model_paras is None):
+        if skip_pretrained:
+           import h5py as _h5py
+           with _h5py.File("/mnt/media/MDStream/StreamML/networks/model.h5", "r") as _f:
+               _model_config = _f.attrs["model_config"]
+           model = tf.keras.models.model_from_json(_model_config, custom_objects=custom_objects)
+           infra_json_str = model.to_json()
+           if self.model_paras is not None:
+               weights_list = json.loads(self.model_paras)
+               weights = [np.array(arr) for arr in weights_list]
+               model.set_weights(weights)
+        elif (self.model_paras is None):
            model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model.h5", custom_objects=custom_objects, compile=True)
            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
            config = model.get_config()

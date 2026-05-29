@@ -3,7 +3,8 @@
 # Run this on apt055.apt.emulab.net
 set -e
 
-KAFKA_HOST="apt051.apt.emulab.net"
+# Use internal IP — apt051.apt.emulab.net does not resolve from within the cluster
+KAFKA_HOST="10.10.1.1"
 CONDA_ENV="mostream"
 REPO_URL="https://github.com/PiscesLab/MoStream.git"   # update if using a fork
 
@@ -38,13 +39,29 @@ conda activate "$CONDA_ENV"
 
 # ── 4. Python packages ───────────────────────────────────────────────────────
 echo "=== Installing Python packages ==="
-pip install --quiet kafka-python rdkit
+# requests + qcelemental: required by simulator.py but missing from requirements.txt
+pip install --quiet kafka-python rdkit requests qcelemental
 
 # ── 5. Clone repo ────────────────────────────────────────────────────────────
 if [ ! -d "$HOME/MoStream" ]; then
   echo "=== Cloning repo ==="
   git clone "$REPO_URL" "$HOME/MoStream"
 fi
+
+# ── 6. gitinfo stub (missing dependency in moldesign) ────────────────────────
+GITINFO="$HOME/MoStream/MoStream/WLGenerator-node1/gitinfo.py"
+if [ ! -f "$GITINFO" ]; then
+  echo "=== Creating gitinfo.py stub ==="
+  cat > "$GITINFO" << 'EOF'
+def get_git_info():
+    return {'commit': 'unknown'}
+EOF
+fi
+
+# ── 7. Data directories ──────────────────────────────────────────────────────
+sudo mkdir -p /mnt/media/MDStream/WLGenerator/dataset
+sudo chmod 777 /mnt/media/MDStream/WLGenerator/dataset
+echo "=== NOTE: Copy training-data-simple.txt to /mnt/media/MDStream/WLGenerator/dataset/ ==="
 
 echo ""
 echo "=== apt055 setup done ==="

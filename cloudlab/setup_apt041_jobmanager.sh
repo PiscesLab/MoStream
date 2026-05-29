@@ -3,7 +3,8 @@
 # Run this on apt041.apt.emulab.net
 set -e
 
-KAFKA_HOST="apt051.apt.emulab.net"
+# Use internal IP — apt051.apt.emulab.net does not resolve from within the cluster
+KAFKA_HOST="10.10.1.1"
 JOBMANAGER_HOST="apt041.apt.emulab.net"
 FLINK_VERSION="2.0.0"
 CONDA_ENV="mostream"
@@ -38,9 +39,25 @@ if ! conda env list | grep -q "^$CONDA_ENV "; then
 fi
 conda activate "$CONDA_ENV"
 
-# ── 4. Python packages (full stack needed — job graph building imports all UDF modules) ──
+# ── 4. Hostname + DNS fixes (must happen before any pip install) ─────────────
+NODE_IP=$(ip route | grep "10\.10\." | awk '{print $9}' | head -1)
+FULL_HOSTNAME=$(hostname)
+if ! grep -q "$FULL_HOSTNAME" /etc/hosts; then
+  echo "=== Fixing /etc/hosts for PyFlink MiniCluster ==="
+  sudo sh -c "echo '$NODE_IP $FULL_HOSTNAME' >> /etc/hosts"
+fi
+# systemd-resolved is broken on this node — bypass it
+if ! nslookup pypi.org >/dev/null 2>&1; then
+  echo "=== Fixing DNS (systemd-resolved not running) ==="
+  sudo bash -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
+fi
+
+# ── 5. Python packages (full stack needed — job graph building imports all UDF modules) ──
 echo "=== Installing Python packages ==="
-pip install --quiet apache-flink==2.0.0 kafka-python tensorflow==2.14.0 nfp h5py rdkit "pandas<2"
+# h5py==3.1.0: newer versions cannot read model.h5 (non-standard HDF5 float type)
+# nfp==0.1.3:  needs GlobalUpdate + ConcatDense that were present when model.h5 was saved (Keras 2.8.0)
+pip install --quiet apache-flink==2.0.0 kafka-python tensorflow==2.14.0 \
+  "nfp==0.1.3" "h5py==3.1.0" rdkit "pandas<2"
 conda install -n "$CONDA_ENV" -y "numpy<2"
 conda install -n "$CONDA_ENV" -y libstdcxx-ng
 

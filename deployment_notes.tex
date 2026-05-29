@@ -1,0 +1,248 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codeframe}{RGB}{200,200,200}
+\definecolor{statusdone}{RGB}{0,128,0}
+\definecolor{statuspending}{RGB}{200,80,0}
+
+\lstset{
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+}
+
+\newcommand{\itemdone}{\textcolor{statusdone}{$\checkmark$ Done}}
+\newcommand{\itempending}{\textcolor{statuspending}{$\circ$ Pending}}
+
+\title{\textbf{MoStream CloudLab Deployment Notes}}
+\author{Nam Do}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Cluster Layout}
+
+\begin{center}
+\begin{tabular}{llll}
+  \toprule
+  Node & Hostname & Internal IP & Role \\
+  \midrule
+  \texttt{apt051} & \texttt{node0.mostream-test.\ldots} & \texttt{10.10.1.1} & Kafka Broker \\
+  \texttt{apt041} & \texttt{node1.mostream-test.\ldots} & \texttt{10.10.1.2} & MDWorkflow (PyFlink) \\
+  \texttt{apt063} & \texttt{node2.mostream-test.\ldots} & \texttt{10.10.1.3} & TaskManager (spare) \\
+  \texttt{apt055} & \texttt{node3.mostream-test.\ldots} & \texttt{10.10.1.4} & WLGenerator (Simulator) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+SSH aliases (in \texttt{\textasciitilde/.ssh/config} on local machine):
+\begin{lstlisting}
+Host kafka
+    HostName apt051.apt.emulab.net
+    User NamSDSU
+Host jobmanager
+    HostName apt041.apt.emulab.net
+    User NamSDSU
+Host taskmanager
+    HostName apt063.apt.emulab.net
+    User NamSDSU
+Host simulator
+    HostName apt055.apt.emulab.net
+    User NamSDSU
+\end{lstlisting}
+
+% ============================================================
+\section{Node 0 --- apt051 (Kafka)}
+
+\subsection{One-time fixes}
+Fix hostname resolution:
+\begin{lstlisting}
+sudo sh -c 'echo "10.10.1.1 node0.mostream-test.pisceslabsd-pg0.apt.emulab.net" >> /etc/hosts'
+\end{lstlisting}
+
+\subsection{Start Kafka}
+\begin{lstlisting}
+cd ~/MoStream
+KAFKA_HOST=10.10.1.1 docker compose up -d
+\end{lstlisting}
+
+Verify:
+\begin{lstlisting}
+docker compose ps
+\end{lstlisting}
+
+\subsection{Create topics (after every Kafka restart)}
+\begin{lstlisting}
+docker compose exec kafka kafka-topics --create \
+  --topic Simulation --bootstrap-server localhost:9092 \
+  --replication-factor 1 --partitions 1
+
+docker compose exec kafka kafka-topics --create \
+  --topic Result --bootstrap-server localhost:9092 \
+  --replication-factor 1 --partitions 1
+
+# Verify
+docker compose exec kafka kafka-topics --list --bootstrap-server localhost:9092
+\end{lstlisting}
+
+\subsection{Monitor messages}
+\begin{lstlisting}
+docker compose exec kafka kafka-console-consumer \
+  --bootstrap-server localhost:9092 \
+  --topic Simulation --from-beginning --max-messages 5
+\end{lstlisting}
+
+% ============================================================
+\section{Node 1 --- apt041 (MDWorkflow / PyFlink)}
+
+\subsection{One-time fixes}
+
+Fix hostname resolution (required for PyFlink MiniCluster):
+\begin{lstlisting}
+sudo sh -c 'echo "10.10.1.2 node1.mostream-test.pisceslabsd-pg0.apt.emulab.net" >> /etc/hosts'
+\end{lstlisting}
+
+Fix DNS (\texttt{systemd-resolved} not running on this node):
+\begin{lstlisting}
+sudo bash -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
+\end{lstlisting}
+
+\subsection{Package installs}
+\begin{lstlisting}
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate mostream
+
+# h5py 3.14 cannot read the model.h5 (non-standard float type)
+pip install h5py==3.1.0
+
+# nfp must have GlobalUpdate + ConcatDense (saved with Keras 2.8.0)
+pip install nfp==0.1.3
+\end{lstlisting}
+
+\subsection{Data files required}
+Copy model weights from Windows share:
+\begin{lstlisting}
+# On local machine:
+ssh jobmanager "sudo mkdir -p /mnt/media/MDStream/StreamML/networks && \
+  sudo chmod 777 /mnt/media/MDStream/StreamML/networks"
+
+scp "/mnt/n/Applications/MoStreamData/.../model.h5" \
+  jobmanager:/mnt/media/MDStream/StreamML/networks/
+\end{lstlisting}
+
+\subsection{Code fixes applied}
+\textbf{MDWorkflow.py} --- Flink network memory (min/max must match):
+\begin{lstlisting}
+config.set_string("taskmanager.memory.network.min", "512m")
+config.set_string("taskmanager.memory.network.max", "512m")  # was "2g"
+\end{lstlisting}
+
+\textbf{NPMMModel.py} --- add all required custom objects:
+\begin{lstlisting}
+custom_objects = nfp.custom_objects.copy()
+custom_objects['ReduceAtoms'] = ReduceAtoms
+if hasattr(nfp, 'GlobalUpdate'):  custom_objects['GlobalUpdate']  = nfp.GlobalUpdate
+if hasattr(nfp, 'EdgeUpdate'):    custom_objects['EdgeUpdate']    = nfp.EdgeUpdate
+if hasattr(nfp, 'NodeUpdate'):    custom_objects['NodeUpdate']    = nfp.NodeUpdate
+if hasattr(nfp, 'ConcatDense'):   custom_objects['ConcatDense']   = nfp.ConcatDense
+\end{lstlisting}
+
+\subsection{Run MDWorkflow}
+\begin{lstlisting}
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate mostream
+cd ~/MoStream/MoStream/MDStream/StreamML
+
+python MDWorkflow.py \
+  --kafka-bootstrap 10.10.1.1:9092 \
+  --starting-offset earliest \
+  --group-id debug-group-1 2>&1 | tee output.log
+\end{lstlisting}
+
+% ============================================================
+\section{Node 2 --- apt055 (WLGenerator / Simulator)}
+
+\subsection{One-time fixes}
+
+Create stub \texttt{gitinfo.py} (missing dependency):
+\begin{lstlisting}
+cat > ~/MoStream/MoStream/WLGenerator-node1/gitinfo.py << 'EOF'
+def get_git_info():
+    return {'commit': 'unknown'}
+EOF
+\end{lstlisting}
+
+\subsection{Package installs}
+\begin{lstlisting}
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate mostream
+pip install requests qcelemental
+\end{lstlisting}
+
+\subsection{Data files required}
+Copy training dataset from Windows share:
+\begin{lstlisting}
+# On local machine:
+ssh simulator "sudo mkdir -p /mnt/media/MDStream/WLGenerator/dataset && \
+  sudo chmod 777 /mnt/media/MDStream/WLGenerator/dataset"
+
+scp "/mnt/n/Applications/MoStreamData/.../training-data-simple.txt" \
+  simulator:/mnt/media/MDStream/WLGenerator/dataset/
+\end{lstlisting}
+
+\subsection{Run simulator}
+\begin{lstlisting}
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate mostream
+cd ~/MoStream/MoStream/WLGenerator-node1
+
+KAFKA_BOOTSTRAP=10.10.1.1:9092 python simulator.py \
+  --topic Simulation --interval 1.0
+\end{lstlisting}
+
+% ============================================================
+\section{Node 3 --- apt063 (TaskManager / Spare)}
+Not yet configured. No steps needed for current single-node PyFlink setup.
+
+% ============================================================
+\section{Progress Summary}
+
+\begin{tabular}{p{6cm}ll}
+  \toprule
+  Item & Status & Notes \\
+  \midrule
+  Kafka running on apt051           & \itemdone    & Topics wiped on restart \\
+  Advertised listener fix           & \itemdone    & \texttt{KAFKA\_HOST=10.10.1.1} \\
+  Simulator sending messages        & \itemdone    & Set \texttt{KAFKA\_BOOTSTRAP} env var \\
+  MDWorkflow receiving + training   & \itemdone    & \texttt{train\_y} accumulates correctly \\
+  Flink network memory fix          & \itemdone    & min = max = 512m \\
+  h5py downgrade to 3.1.0           & \itemdone    & Newer versions break model.h5 load \\
+  nfp pinned to 0.1.3               & \itemdone    & Needs GlobalUpdate + ConcatDense \\
+  NPMMModel custom\_objects fix     & \itempending & ConcatDense added, not yet tested \\
+  Full inference + ranking          & \itempending & Blocked on above \\
+  Results in Kafka Result topic     & \itempending & Blocked on inference \\
+  apt063 TaskManager setup          & \itempending & Not started \\
+  \bottomrule
+\end{tabular}
+
+\bigskip
+\textbf{Known issues:}
+\begin{itemize}
+  \item Kafka topics are wiped on \texttt{docker compose down} --- recreate them every restart.
+  \item \texttt{systemd-resolved} is broken on apt041 --- \texttt{/etc/resolv.conf} fix is not persistent across reboots; re-apply if needed.
+  \item Model cold-start: NPMM returns \texttt{model\_not\_ready} until 16 messages are accumulated.
+  \item No Flink checkpointing --- trained weights lost if MDWorkflow crashes.
+\end{itemize}
+
+\end{document}
