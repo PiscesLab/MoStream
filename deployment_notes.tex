@@ -43,8 +43,8 @@
   Node & Hostname & Internal IP & Role \\
   \midrule
   \texttt{apt051} & \texttt{node0.mostream-test.\ldots} & \texttt{10.10.1.1} & Kafka Broker \\
-  \texttt{apt041} & \texttt{node1.mostream-test.\ldots} & \texttt{10.10.1.2} & MDWorkflow (PyFlink) \\
-  \texttt{apt063} & \texttt{node2.mostream-test.\ldots} & \texttt{10.10.1.3} & TaskManager (spare) \\
+  \texttt{apt041} & \texttt{node1.mostream-test.\ldots} & \texttt{10.10.1.2} & Flink JobManager \\
+  \texttt{apt063} & \texttt{node2.mostream-test.\ldots} & \texttt{10.10.1.3} & Flink TaskManager \\
   \texttt{apt055} & \texttt{node3.mostream-test.\ldots} & \texttt{10.10.1.4} & WLGenerator (Simulator) \\
   \bottomrule
 \end{tabular}
@@ -67,7 +67,7 @@ Host simulator
 \end{lstlisting}
 
 % ============================================================
-\section{Node 0 --- apt051 (Kafka)}
+\section{Node 0 - apt051 (Kafka)}
 
 \subsection{One-time fixes}
 Fix hostname resolution:
@@ -108,11 +108,11 @@ docker compose exec kafka kafka-console-consumer \
 \end{lstlisting}
 
 % ============================================================
-\section{Node 1 --- apt041 (MDWorkflow / PyFlink)}
+\section{Node 1 - apt041 (MDWorkflow / PyFlink)}
 
 \subsection{One-time fixes}
 
-Fix hostname resolution (required for PyFlink MiniCluster):
+Fix hostname resolution (required for Flink cluster RPC):
 \begin{lstlisting}
 sudo sh -c 'echo "10.10.1.2 node1.mostream-test.pisceslabsd-pg0.apt.emulab.net" >> /etc/hosts'
 \end{lstlisting}
@@ -145,13 +145,13 @@ scp "/mnt/n/Applications/MoStreamData/.../model.h5" \
 \end{lstlisting}
 
 \subsection{Code fixes applied}
-\textbf{MDWorkflow.py} --- Flink network memory (min/max must match):
+\textbf{MDWorkflow.py} - Flink network memory (min/max must match):
 \begin{lstlisting}
 config.set_string("taskmanager.memory.network.min", "512m")
 config.set_string("taskmanager.memory.network.max", "512m")  # was "2g"
 \end{lstlisting}
 
-\textbf{NPMMModel.py} --- add all required custom objects:
+\textbf{NPMMModel.py} - add all required custom objects:
 \begin{lstlisting}
 custom_objects = nfp.custom_objects.copy()
 custom_objects['ReduceAtoms'] = ReduceAtoms
@@ -173,7 +173,7 @@ python MDWorkflow.py \
 \end{lstlisting}
 
 % ============================================================
-\section{Node 2 --- apt055 (WLGenerator / Simulator)}
+\section{Node 2 - apt055 (WLGenerator / Simulator)}
 
 \subsection{One-time fixes}
 
@@ -212,8 +212,45 @@ KAFKA_BOOTSTRAP=10.10.1.1:9092 python simulator.py \
 \end{lstlisting}
 
 % ============================================================
-\section{Node 3 --- apt063 (TaskManager / Spare)}
-Not yet configured. No steps needed for current single-node PyFlink setup.
+\section{Node 3 - apt063 (Flink TaskManager)}
+
+apt063 runs the Flink TaskManager which executes all stream processing operators
+(Train, Infer, Rank). Jobs are submitted from apt041 to the Flink cluster --- not
+MiniCluster. Monitor via the Flink Web UI at
+\texttt{http://node1.mostream-test.pisceslabsd-pg0.apt.emulab.net:8081}.
+
+\subsection{Package installs (same as apt041)}
+\begin{lstlisting}
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate mostream
+pip install apache-flink==2.0.0 tensorflow==2.14.0 \
+            "nfp==0.1.3" "h5py==3.1.0" rdkit "pandas<2" "numpy<2"
+\end{lstlisting}
+
+\subsection{Data files required}
+Copy model weights (same path as apt041):
+\begin{lstlisting}
+# On local machine:
+scp "/mnt/n/Applications/MoStreamData/.../model.h5" \
+  taskmanager:/mnt/media/MDStream/StreamML/networks/model.h5
+\end{lstlisting}
+
+\subsection{Start TaskManager}
+\begin{lstlisting}
+~/flink/bin/taskmanager.sh start
+\end{lstlisting}
+
+\subsection{Toggle pretrained weights}
+\begin{lstlisting}
+# To use pretrained weights (once professor provides compatible model.h5):
+echo 'export MOSTREAM_SKIP_PRETRAINED=0' >> ~/flink/conf/flink-env.sh
+~/flink/bin/taskmanager.sh stop && ~/flink/bin/taskmanager.sh start
+\end{lstlisting}
+
+\subsection{Submit job (run on apt041)}
+\begin{lstlisting}
+sed -i 's/\r//' ~/MoStream/cloudlab/submit_job.sh   # fix CRLF if needed
+bash ~/MoStream/cloudlab/submit_job.sh
+\end{lstlisting}
 
 % ============================================================
 \section{Progress Summary}
@@ -225,7 +262,7 @@ Not yet configured. No steps needed for current single-node PyFlink setup.
   Kafka running on apt051               & \itemdone    & Topics wiped on restart \\
   Advertised listener fix               & \itemdone    & \texttt{KAFKA\_HOST=10.10.1.1} \\
   Simulator sending messages            & \itemdone    & \texttt{acks=1}; set \texttt{KAFKA\_BOOTSTRAP} \\
-  MDWorkflow training (MiniCluster)     & \itemdone    & \texttt{train\_y} accumulates \\
+  MDWorkflow training (Flink cluster)   & \itemdone    & \texttt{train\_y} accumulates \\
   Proper Flink cluster (apt041+apt063)  & \itemdone    & 4/4 tasks RUNNING \\
   Flink network memory fix              & \itemdone    & min = max = 512m in MDWorkflow.py \\
   h5py pinned to 3.1.0                  & \itemdone    & Newer breaks model.h5 HDF5 read \\
@@ -250,22 +287,22 @@ Not yet configured. No steps needed for current single-node PyFlink setup.
 echo 'export MOSTREAM_SKIP_PRETRAINED=0' >> ~/flink/conf/flink-env.sh
 ~/flink/bin/taskmanager.sh stop && ~/flink/bin/taskmanager.sh start
         \end{lstlisting}
-  \item \texttt{cloudlab/*.sh}: \texttt{KAFKA\_HOST="10.10.1.1"} --- internal IP of apt051.
+  \item \texttt{cloudlab/*.sh}: \texttt{KAFKA\_HOST="10.10.1.1"} - internal IP of apt051.
         Will change if experiment is recreated on different nodes.
-  \item \texttt{simulator.py}: \texttt{acks=1} --- changed from \texttt{acks=0} which silently
+  \item \texttt{simulator.py}: \texttt{acks=1} - changed from \texttt{acks=0} which silently
         dropped messages with the Confluent Kafka 3.x broker.
 \end{itemize}
 
 \bigskip
 \textbf{Known issues:}
 \begin{itemize}
-  \item Kafka topics wiped on \texttt{docker compose down} --- recreate after every restart.
-  \item \texttt{systemd-resolved} broken on apt041 --- DNS fix (\texttt{nameserver 8.8.8.8})
+  \item Kafka topics wiped on \texttt{docker compose down} - recreate after every restart.
+  \item \texttt{systemd-resolved} broken on apt041 - DNS fix (\texttt{nameserver 8.8.8.8})
         is not persistent across reboots; re-apply if node reboots.
   \item \texttt{/etc/resolv.conf} fix on apt041 overwritten if \texttt{systemd-networkd}
-        restarts --- add \texttt{nameserver 8.8.8.8} to \texttt{/etc/resolv.conf.d/} if persistent fix needed.
+        restarts - add \texttt{nameserver 8.8.8.8} to \texttt{/etc/resolv.conf.d/} if persistent fix needed.
   \item Model cold-start: NPMM returns \texttt{model\_not\_ready} until 16 messages accumulate.
-  \item No Flink checkpointing --- trained weights lost if MDWorkflow crashes.
+  \item No Flink checkpointing - trained weights lost if MDWorkflow crashes.
   \item \texttt{submit\_job.sh} has Windows line endings (\texttt{\textbackslash r\textbackslash n}) when committed from Windows;
         run \texttt{sed -i 's/\textbackslash r//' submit\_job.sh} on CloudLab before executing.
 \end{itemize}
