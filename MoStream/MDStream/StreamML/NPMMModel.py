@@ -99,7 +99,10 @@ class TrainFunction(KeyedProcessFunction):
         # nfp has 4). Weights will still update correctly from streaming training data.
         # Hardcoded True: pretrained weights incompatible (nfp version mismatch).
         # Ask professor for correct nfp version / regenerated model.h5.
-        skip_pretrained = True  # was: os.environ.get("MOSTREAM_SKIP_PRETRAINED", "0") == "1"
+        # Toggle: set MOSTREAM_SKIP_PRETRAINED=0 on apt063 to use pretrained weights.
+        # Default "1" (skip) — weights incompatible until professor provides matching model.h5.
+        # To enable: add "export MOSTREAM_SKIP_PRETRAINED=0" to ~/flink/conf/flink-env.sh on apt063.
+        skip_pretrained = os.environ.get("MOSTREAM_SKIP_PRETRAINED", "1") == "1"
 
         # Make a copy of the model
         if skip_pretrained:

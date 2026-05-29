@@ -241,10 +241,15 @@ Not yet configured. No steps needed for current single-node PyFlink setup.
 \bigskip
 \textbf{Hardcoded values (must revisit):}
 \begin{itemize}
-  \item \texttt{NPMMModel.py}: \texttt{skip\_pretrained = True} --- pretrained weights from
-        \texttt{model.h5} are incompatible (saved with nfp~0.0.x/TF1, EdgeUpdate had 10 weights;
-        current nfp~0.1.3 has 4). Model trains from random init via streaming data.
-        Ask professor for the original nfp version or a regenerated \texttt{model.h5}.
+  \item \texttt{NPMMModel.py}: controlled by \texttt{MOSTREAM\_SKIP\_PRETRAINED} env var
+        (default \texttt{"1"} = skip). Pretrained weights from \texttt{model.h5} are incompatible
+        (saved with nfp~0.0.x/TF1; EdgeUpdate had 10 weights, current nfp~0.1.3 has 4).
+        To enable pretrained weights once professor provides a compatible \texttt{model.h5}:
+        \begin{lstlisting}
+# On apt063:
+echo 'export MOSTREAM_SKIP_PRETRAINED=0' >> ~/flink/conf/flink-env.sh
+~/flink/bin/taskmanager.sh stop && ~/flink/bin/taskmanager.sh start
+        \end{lstlisting}
   \item \texttt{cloudlab/*.sh}: \texttt{KAFKA\_HOST="10.10.1.1"} --- internal IP of apt051.
         Will change if experiment is recreated on different nodes.
   \item \texttt{simulator.py}: \texttt{acks=1} --- changed from \texttt{acks=0} which silently
