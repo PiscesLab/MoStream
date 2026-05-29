@@ -218,31 +218,51 @@ Not yet configured. No steps needed for current single-node PyFlink setup.
 % ============================================================
 \section{Progress Summary}
 
-\begin{tabular}{p{6cm}ll}
+\begin{tabular}{p{6.5cm}ll}
   \toprule
   Item & Status & Notes \\
   \midrule
-  Kafka running on apt051           & \itemdone    & Topics wiped on restart \\
-  Advertised listener fix           & \itemdone    & \texttt{KAFKA\_HOST=10.10.1.1} \\
-  Simulator sending messages        & \itemdone    & Set \texttt{KAFKA\_BOOTSTRAP} env var \\
-  MDWorkflow receiving + training   & \itemdone    & \texttt{train\_y} accumulates correctly \\
-  Flink network memory fix          & \itemdone    & min = max = 512m \\
-  h5py downgrade to 3.1.0           & \itemdone    & Newer versions break model.h5 load \\
-  nfp pinned to 0.1.3               & \itemdone    & Needs GlobalUpdate + ConcatDense \\
-  NPMMModel custom\_objects fix     & \itempending & ConcatDense added, not yet tested \\
-  Full inference + ranking          & \itempending & Blocked on above \\
-  Results in Kafka Result topic     & \itempending & Blocked on inference \\
-  apt063 TaskManager setup          & \itempending & Not started \\
+  Kafka running on apt051               & \itemdone    & Topics wiped on restart \\
+  Advertised listener fix               & \itemdone    & \texttt{KAFKA\_HOST=10.10.1.1} \\
+  Simulator sending messages            & \itemdone    & \texttt{acks=1}; set \texttt{KAFKA\_BOOTSTRAP} \\
+  MDWorkflow training (MiniCluster)     & \itemdone    & \texttt{train\_y} accumulates \\
+  Proper Flink cluster (apt041+apt063)  & \itemdone    & 4/4 tasks RUNNING \\
+  Flink network memory fix              & \itemdone    & min = max = 512m in MDWorkflow.py \\
+  h5py pinned to 3.1.0                  & \itemdone    & Newer breaks model.h5 HDF5 read \\
+  nfp pinned to 0.1.3                   & \itemdone    & Needs GlobalUpdate + ConcatDense \\
+  pandas pinned to $<$2                 & \itemdone    & PyFlink Beam fails with pandas$\geq$2 \\
+  NPMMModel skip pretrained weights     & \itemdone    & \textbf{Hardcoded} \texttt{skip\_pretrained=True} \\
+  Python modules distributed to TM     & \itemdone    & \texttt{env.add\_python\_file(streamml\_dir)} \\
+  Full inference + ranking              & \itempending & Verify Result topic receiving data \\
+  Pretrained weights compatibility      & \itempending & Ask professor for matching nfp env \\
   \bottomrule
 \end{tabular}
 
 \bigskip
+\textbf{Hardcoded values (must revisit):}
+\begin{itemize}
+  \item \texttt{NPMMModel.py}: \texttt{skip\_pretrained = True} --- pretrained weights from
+        \texttt{model.h5} are incompatible (saved with nfp~0.0.x/TF1, EdgeUpdate had 10 weights;
+        current nfp~0.1.3 has 4). Model trains from random init via streaming data.
+        Ask professor for the original nfp version or a regenerated \texttt{model.h5}.
+  \item \texttt{cloudlab/*.sh}: \texttt{KAFKA\_HOST="10.10.1.1"} --- internal IP of apt051.
+        Will change if experiment is recreated on different nodes.
+  \item \texttt{simulator.py}: \texttt{acks=1} --- changed from \texttt{acks=0} which silently
+        dropped messages with the Confluent Kafka 3.x broker.
+\end{itemize}
+
+\bigskip
 \textbf{Known issues:}
 \begin{itemize}
-  \item Kafka topics are wiped on \texttt{docker compose down} --- recreate them every restart.
-  \item \texttt{systemd-resolved} is broken on apt041 --- \texttt{/etc/resolv.conf} fix is not persistent across reboots; re-apply if needed.
-  \item Model cold-start: NPMM returns \texttt{model\_not\_ready} until 16 messages are accumulated.
+  \item Kafka topics wiped on \texttt{docker compose down} --- recreate after every restart.
+  \item \texttt{systemd-resolved} broken on apt041 --- DNS fix (\texttt{nameserver 8.8.8.8})
+        is not persistent across reboots; re-apply if node reboots.
+  \item \texttt{/etc/resolv.conf} fix on apt041 overwritten if \texttt{systemd-networkd}
+        restarts --- add \texttt{nameserver 8.8.8.8} to \texttt{/etc/resolv.conf.d/} if persistent fix needed.
+  \item Model cold-start: NPMM returns \texttt{model\_not\_ready} until 16 messages accumulate.
   \item No Flink checkpointing --- trained weights lost if MDWorkflow crashes.
+  \item \texttt{submit\_job.sh} has Windows line endings (\texttt{\textbackslash r\textbackslash n}) when committed from Windows;
+        run \texttt{sed -i 's/\textbackslash r//' submit\_job.sh} on CloudLab before executing.
 \end{itemize}
 
 \end{document}

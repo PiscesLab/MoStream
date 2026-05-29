@@ -68,6 +68,10 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     kafka_clients   = (jars_dir / "kafka-clients-3.6.1.jar").as_uri()
     env.add_jars(kafka_connector, kafka_clients)
 
+    # Distribute StreamML directory to TaskManagers (moldesign package + UDF modules)
+    streamml_dir = Path(__file__).resolve().parent
+    env.add_python_file(str(streamml_dir))
+
     env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
     
     # Configure the KafkaSource (consumer)

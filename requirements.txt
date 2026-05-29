@@ -1,16 +1,37 @@
-# Minimal runtime deps for simulator and basic testing
+# ============================================================
+# MoStream pinned runtime dependencies
+# Last verified: 2026-05-29, CloudLab Ubuntu 22.04, Python 3.9
+# ============================================================
+
+# --- Kafka ---
 kafka-python
+
+# --- Flink ---
+apache-flink==2.0.0
+
+# --- ML / model ---
+tensorflow==2.14.0
+
+# h5py MUST stay at 3.1.0 — newer versions cannot read model.h5 due to a
+# non-standard HDF5 float type written by an older nfp/TF1 environment.
+h5py==3.1.0
+
+# nfp MUST stay at 0.1.3 — model.h5 was saved with GlobalUpdate + ConcatDense
+# layers that only exist in nfp 0.1.x. Upgrading breaks model loading.
+# Ask professor for a regenerated model.h5 before changing this.
+nfp==0.1.3
+
+# pandas MUST stay below 2.0 — apache_beam (used internally by PyFlink) raises
+# TypeError in pandas_type_compatibility.py with pandas>=2 on Python 3.9.
+pandas<2
+numpy<2
+
+# --- Chemistry / molecular ---
+rdkit
 qcelemental
 qcengine
-ase  
+ase
 networkx
-numpy  # Numerical computations
-rdkit
-npf 
-# Optional / heavy packages (install only if you need the full pipeline)
-# pyflink may require a specific Java and flink distribution; install only if running MDWorkflow without --local
-apache-flink
 
-# RDKit and moldesign are large scientific packages with system deps; install them only when needed
-# rdkit
-# moldesign
+# --- Misc ---
+requests

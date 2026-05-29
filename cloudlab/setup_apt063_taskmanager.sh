@@ -40,7 +40,11 @@ conda activate "$CONDA_ENV"
 
 # ── 4. Python packages ───────────────────────────────────────────────────────
 echo "=== Installing Python packages ==="
-pip install --quiet apache-flink==2.0.0 kafka-python tensorflow==2.14.0 nfp h5py rdkit "pandas<2"
+# h5py==3.1.0: newer versions cannot read model.h5 (non-standard HDF5 float type)
+# nfp==0.1.3:  needs GlobalUpdate + ConcatDense (present when model.h5 was saved)
+# pandas<2:    apache_beam (PyFlink internals) fails with pandas>=2 on Python 3.9
+pip install --quiet apache-flink==2.0.0 kafka-python tensorflow==2.14.0 \
+  "nfp==0.1.3" "h5py==3.1.0" rdkit "pandas<2"
 conda install -n "$CONDA_ENV" -y "numpy<2"
 conda install -n "$CONDA_ENV" -y libstdcxx-ng
 

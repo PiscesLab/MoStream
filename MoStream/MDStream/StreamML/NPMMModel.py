@@ -97,7 +97,9 @@ class TrainFunction(KeyedProcessFunction):
         # random init instead. Needed when nfp version mismatch causes weight count
         # error (saved with nfp 0.0.x/TF1 where EdgeUpdate had 10 weights; current
         # nfp has 4). Weights will still update correctly from streaming training data.
-        skip_pretrained = os.environ.get("MOSTREAM_SKIP_PRETRAINED", "0") == "1"
+        # Hardcoded True: pretrained weights incompatible (nfp version mismatch).
+        # Ask professor for correct nfp version / regenerated model.h5.
+        skip_pretrained = True  # was: os.environ.get("MOSTREAM_SKIP_PRETRAINED", "0") == "1"
 
         # Make a copy of the model
         if skip_pretrained:
