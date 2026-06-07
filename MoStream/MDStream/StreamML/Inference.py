@@ -19,15 +19,19 @@ def sigmod(x):
 
 def _default_search_space_path():
     import os
-    # Allow overriding via environment variable for different deployments
+    # 1. Explicit override via env var
     env_path = os.environ.get('KAFKA_SEARCH_SPACE_PATH')
-    if env_path:
+    if env_path and os.path.exists(env_path):
         return env_path
-    # Otherwise resolve relative to this file's repo location
+    # 2. Relative to this file (works when distributed via add_python_file)
     base_dir = os.path.dirname(__file__)
-    candidate = os.path.join(base_dir, '..', 'search_space', 'MOS-search-simple.txt')
-    candidate = os.path.normpath(candidate)
-    return candidate
+    candidate = os.path.normpath(os.path.join(base_dir, '..', 'search_space', 'MOS-search-simple.txt'))
+    if os.path.exists(candidate):
+        return candidate
+    # 3. Fixed path in home directory (works on any CloudLab node after git clone)
+    home_candidate = os.path.expanduser(
+        '~/MoStream/MoStream/MDStream/StreamML/search_space/MOS-search-simple.txt')
+    return home_candidate
 
 
 def load_search_space_all():
