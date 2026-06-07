@@ -101,7 +101,7 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     .set_bootstrap_servers(kafka_bootstrap) \
     .set_record_serializer(
         KafkaRecordSerializationSchema.builder()
-            .set_topic("Result")
+            .set_topic("Recommend")
             .set_value_serialization_schema(SimpleStringSchema())
             .build()
     ) \
@@ -138,7 +138,7 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
 
     #infer_stream = infer1_stream.union(infer2_stream)
 
-    rank_stream = infer_stream.key_by(lambda x: x[0]).window_all(CountTumblingWindowAssigner(1000)) \
+    rank_stream = infer_stream.key_by(lambda x: x[0]).window_all(CountTumblingWindowAssigner(10)) \
         .apply(RankFunction(), output_type=Types.STRING()).name("Infer->Rank")
         #.map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], float(x.split("$")[2]))), output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.DOUBLE()]))
     #rank_stream = infer_stream.window_all(TumblingEventTimeWindows.of(Time.seconds(5))) \
@@ -155,10 +155,10 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
 
     # Configure the KafkaSink (producer)
     sink = KafkaSink.builder() \
-      .set_bootstrap_servers("localhost:9092") \
+      .set_bootstrap_servers(kafka_bootstrap) \
       .set_record_serializer(
         KafkaRecordSerializationSchema.builder()
-            .set_topic("Result")
+            .set_topic("Recommend")
             .set_value_serialization_schema(SimpleStringSchema())
             .build()
         ) \

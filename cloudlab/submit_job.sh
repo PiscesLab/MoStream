@@ -3,8 +3,7 @@
 # to submit the PyFlink MDWorkflow job to the Flink cluster.
 set -e
 
-# Use internal IP — apt051.apt.emulab.net does not resolve from within the cluster
-KAFKA_HOST="10.10.1.1"
+KAFKA_HOST="128.110.96.51"
 CONDA_ENV="mostream"
 
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
