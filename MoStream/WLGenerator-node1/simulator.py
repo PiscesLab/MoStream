@@ -42,11 +42,17 @@ def SendData():
         except KafkaError as e:
             print(e)
 
-def get_new_smile():
-        kafka_bootstrap = os.environ.get('KAFKA_BOOTSTRAP', 'localhost:9092')
-        consumer = KafkaConsumer('Recommend', bootstrap_servers=[kafka_bootstrap])
-        for msg in consumer:
-                return eval(str(msg.value))
+def parse_recommend_msg(msg_value):
+        # Flink writes: "smiles: CCO ucb: 0.42 est_ip: 9.1 timestamp: 1234"
+        try:
+                text = msg_value.decode('utf-8') if isinstance(msg_value, bytes) else msg_value
+                tokens = text.split()
+                parts = {tokens[i].rstrip(':'): tokens[i+1] for i in range(0, len(tokens)-1, 2)}
+                smiles = parts.get('smiles')
+                est_ip = float(parts.get('est_ip', 0.0))
+                return smiles, est_ip
+        except Exception:
+                return None, None
 
 def SimulationTask(inchi):
         mol = Chem.MolFromInchi(inchi)
@@ -77,28 +83,37 @@ if __name__ == "__main__":
         kafka_bootstrap = os.environ.get('KAFKA_BOOTSTRAP', 'localhost:9092')
         producer = KafkaProducer(bootstrap_servers=[kafka_bootstrap], acks=1, retries=10, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
+        # Non-blocking consumer: poll Recommend topic, fall back to random if empty
+        recommend_consumer = KafkaConsumer(
+                'Recommend',
+                bootstrap_servers=[kafka_bootstrap],
+                auto_offset_reset='latest',
+                consumer_timeout_ms=500)
+
         while len(unsearched_mol) > 0:
-        #for i in range(5):
-              if (flag==0):
-                 #inchi = random.choice(unsearched_mol)
-                 inchi = random.choice(valid_list)
-                 flag = 1
-              else:
-                 inchi = random.choice(invalid_list)
-                 flag = 0
+              # Try to get a recommended smiles from Flink
+              smiles_train, ip_train = None, None
+              for msg in recommend_consumer:
+                    smiles_train, ip_train = parse_recommend_msg(msg.value)
+                    if smiles_train:
+                          print(f"[feedback] using recommended smiles: {smiles_train} est_ip: {ip_train}")
+                          break
 
-              smiles_train = smiles_list[inchi_list.index(inchi)]
-              ip_train = ip_list[inchi_list.index(inchi)]  
+              # Fall back to random if no recommendation available
+              if not smiles_train:
+                    if (flag == 0):
+                          inchi = random.choice(valid_list)
+                          flag = 1
+                    else:
+                          inchi = random.choice(invalid_list)
+                          flag = 0
+                    smiles_train = smiles_list[inchi_list.index(inchi)]
+                    ip_train = ip_list[inchi_list.index(inchi)]
+
               time.sleep(1)
-              #smiles, ip_simulate = SimulationTask(inchi)
-
               timestamp = int(time.time() * 1000)
               model_id = random.choice(range(1))
-              #model_id = (model_id + 1) % 16
-              #model_id = 0
-              data = {"timestamp": timestamp, "smiles": smiles_train, "inchi": inchi, "IP_simulate": ip_train, "model_id": model_id}
-              #print("smiles: ", smiles, " smiles_tmp: ", smiles_tmp, " IP_simulate: " , data.oxidation_potential['xtb-vacuum'], " IP_tmp: ", ip_tmp, inchi_list.index(inchi))
+              data = {"timestamp": timestamp, "smiles": smiles_train, "inchi": "", "IP_simulate": ip_train, "model_id": model_id}
               SendData()
-              #unsearched_mol.remove(inchi)
 
         
