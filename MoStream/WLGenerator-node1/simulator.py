@@ -74,11 +74,16 @@ def SimulationTask(inchi):
         return smiles, data.oxidation_potential['xtb-vacuum']
 
 if __name__ == "__main__":
+        import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--interval', type=float, default=1.0, help='Seconds between messages')
+        args = parser.parse_args()
+
         logger = logging.getLogger("__main__")
         logger.setLevel(logging.CRITICAL)
         smiles_list, inchi_list, ip_list, valid_list, invalid_list = load_dataset()
         unsearched_mol = inchi_list
-        model_id = 0        
+        model_id = 0
         flag = 0
         kafka_bootstrap = os.environ.get('KAFKA_BOOTSTRAP', 'localhost:9092')
         producer = KafkaProducer(bootstrap_servers=[kafka_bootstrap], acks=1, retries=10, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
@@ -95,9 +100,11 @@ if __name__ == "__main__":
               smiles_train, ip_train = None, None
               for msg in recommend_consumer:
                     smiles_train, ip_train = parse_recommend_msg(msg.value)
-                    if smiles_train:
+                    _bad = ('search_space_empty', 'model_not_ready', 'mol_dicts_empty', 'inference_error')
+                    if smiles_train and not any(p in smiles_train for p in _bad):
                           print(f"[feedback] using recommended smiles: {smiles_train} est_ip: {ip_train}")
                           break
+                    smiles_train = None
 
               # Fall back to random if no recommendation available
               if not smiles_train:
@@ -110,7 +117,7 @@ if __name__ == "__main__":
                     smiles_train = smiles_list[inchi_list.index(inchi)]
                     ip_train = ip_list[inchi_list.index(inchi)]
 
-              time.sleep(1)
+              time.sleep(args.interval)
               timestamp = int(time.time() * 1000)
               model_id = random.choice(range(1))
               data = {"timestamp": timestamp, "smiles": smiles_train, "inchi": "", "IP_simulate": ip_train, "model_id": model_id}

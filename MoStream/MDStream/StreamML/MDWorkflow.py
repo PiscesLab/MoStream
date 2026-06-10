@@ -145,8 +145,9 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     #                          .apply(RankFunction())    
    
     #output_stream = rank_stream.filter(lambda x:x!='').name("Rank-Filter")
+    _PLACEHOLDERS = {'search_space_empty', 'model_not_ready', 'mol_dicts_empty', 'inference_error'}
     output_stream = rank_stream.flat_map(lambda x: x.split("$"), output_type=Types.STRING()).name("Rank->Filter") \
-        .filter(lambda x: x!='').name("Filter")
+        .filter(lambda x: x != '' and not any(p in x for p in ('search_space_empty', 'model_not_ready', 'mol_dicts_empty', 'inference_error'))).name("Filter")
     
     #output_stream = extracted_stream.key_by(lambda x: x[0]).reduce(lambda a, b: (a[1] + b[1], b[0]))
     #output_stream = output_stream.map(lambda x: str(x), output_type=Types.STRING())

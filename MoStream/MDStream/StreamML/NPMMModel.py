@@ -18,7 +18,7 @@ class TrainFunction(KeyedProcessFunction):
         #print("reach_init")
         self.state = None
         self.num_epochs = 1
-        self.batch_size = 4
+        self.batch_size = 16
         self.validation_split = 0.1
         self.learning_rate = 1e-3
         self.random_state = 1
