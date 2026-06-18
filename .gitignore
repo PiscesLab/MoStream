@@ -19,3 +19,7 @@ __MACOSX/
 
 # Local-only files (never publish)
 cloudlab/cluster.conf
+
+
+# Report
+*.tex

@@ -30,7 +30,9 @@ rm -rf tmp/
 FLINK_HOME="${FLINK_HOME:-$HOME/flink}"
 PARALLELISM="${PARALLELISM:-1}"
 echo "=== Submitting PyFlink job (Flink: $FLINK_HOME, Kafka: $KAFKA_HOST, Parallelism: $PARALLELISM) ==="
+PYTHON_EXEC="${PYTHON_EXEC:-$HOME/miniconda3/envs/mostream/bin/python3.9}"
 "$FLINK_HOME/bin/flink" run \
   -p "$PARALLELISM" \
+  -pyexec "$PYTHON_EXEC" \
   -py MDWorkflow.py \
   --kafka-bootstrap "$KAFKA_HOST:9092"

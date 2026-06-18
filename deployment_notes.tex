@@ -25,7 +25,7 @@
 \newcommand{\itemdone}{\textcolor{statusdone}{$\checkmark$ Done}}
 \newcommand{\itempending}{\textcolor{statuspending}{$\circ$ Pending}}
 
-\title{\textbf{MoStream CloudLab Deployment Notes -- v2}}
+\title{\textbf{MoStream CloudLab Deployment Notes -- v3}}
 \author{Nam Do}
 \date{\today}
 
@@ -68,6 +68,73 @@ Host taskmanager
 Host simulator
     HostName apt055.apt.emulab.net
     User NamSDSU
+\end{lstlisting}
+
+% ============================================================
+\section{Fresh Node Quickstart (run when CloudLab nodes are replaced)}
+
+When nodes die and new ones are allocated, follow this checklist in order.
+IPs will change --- update them in the scripts before running.
+
+\subsection{Step 1 -- Update SSH aliases on local machine}
+Edit \texttt{\textasciitilde/.ssh/config} with the new hostnames/IPs.
+
+\subsection{Step 2 -- Clone repo and run setup scripts on each node}
+\begin{lstlisting}
+# On ALL nodes (apt051, apt041, apt063, apt055):
+git clone git@github.com:do4am/MoStream.git ~/MoStream
+cd ~/MoStream
+
+# Then run the node-specific setup script:
+# apt051:  bash cloudlab/setup_kafka.sh
+# apt041:  bash cloudlab/setup_jobmanager.sh
+# apt063:  bash cloudlab/setup_taskmanager.sh
+# apt055:  bash cloudlab/setup_simulator.sh
+\end{lstlisting}
+
+\subsection{Step 3 -- Copy large data files (not in git)}
+\begin{lstlisting}
+# From local machine:
+# Search space file (required by InferFunction on TaskManager):
+scp MOS-search-simple.txt \
+  jobmanager:~/MoStream/MoStream/MDStream/StreamML/search_space/
+scp MOS-search-simple.txt \
+  taskmanager:~/MoStream/MoStream/MDStream/StreamML/search_space/
+
+# Simulator dataset:
+ssh simulator "sudo mkdir -p /mnt/media/MDStream/WLGenerator/dataset && \
+  sudo chmod 777 /mnt/media/MDStream/WLGenerator/dataset"
+scp training-data-simple.txt \
+  simulator:/mnt/media/MDStream/WLGenerator/dataset/
+\end{lstlisting}
+
+\subsection{Step 4 -- Update hardcoded IPs in scripts}
+Edit the following with the new node IPs:
+\begin{itemize}
+  \item \texttt{cloudlab/submit\_job.sh}: \texttt{KAFKA\_HOST} and \texttt{TM\_IP}
+  \item \texttt{cloudlab/setup\_jobmanager.sh}: \texttt{TM\_IP} default value
+  \item Flink config on apt041: run \texttt{setup\_jobmanager.sh} which auto-detects JM IP
+\end{itemize}
+
+\subsection{Step 5 -- Start services (in order)}
+\begin{lstlisting}
+# 1. apt051: start Kafka
+cd ~/MoStream && docker compose up -d
+docker compose exec kafka /opt/kafka/bin/kafka-topics.sh --create \
+  --topic Simulation --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+docker compose exec kafka /opt/kafka/bin/kafka-topics.sh --create \
+  --topic Recommend --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+# 2. apt063: start TaskManager
+~/flink/bin/taskmanager.sh start
+
+# 3. apt041: start JobManager and submit job
+~/flink/bin/jobmanager.sh start
+bash ~/MoStream/cloudlab/submit_job.sh   # also auto-fixes DNS
+
+# 4. apt055: run simulator
+cd ~/MoStream/MoStream/WLGenerator-node1
+KAFKA_BOOTSTRAP=<kafka-ip>:9092 python simulator.py --interval 1.0
 \end{lstlisting}
 
 % ============================================================
