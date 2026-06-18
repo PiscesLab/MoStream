@@ -1,18 +1,12 @@
-import nfp
-import tensorflow as tf
 import numpy as np
 import pickle as pkl
-import redis, random, time
+import random, time
 
 from pyflink.datastream.functions import AllWindowFunction, RuntimeContext
 from pyflink.datastream.state import MapStateDescriptor
 from pyflink.datastream.window import CountWindow
 from pyflink.common.typeinfo import Types
-from tensorflow.python.keras import callbacks as cb
 from typing import List, Any, Optional, Tuple, Dict, Union, Iterable
-from moldesign.utils.conversions import convert_string_to_dict
-from moldesign.utils.callbacks import LRLogger, EpochTimeLogger, TimeLimitCallback
-from moldesign.score.nfp import make_data_loader, ReduceAtoms
 
 class RankFunction(AllWindowFunction):
 

@@ -1,18 +1,13 @@
-import nfp, json
-import tensorflow as tf
+import json
 import numpy as np
 import pickle as pkl
-import redis, random, time, math
+import random, time, math
+import traceback
 
 from pyflink.datastream.functions import KeyedProcessFunction, RuntimeContext
 from pyflink.datastream.state import ValueStateDescriptor
 from pyflink.common.typeinfo import Types
-from tensorflow.python.keras import callbacks as cb
 from typing import List, Any, Optional, Tuple, Dict, Union
-from moldesign.utils.conversions import convert_string_to_dict
-from moldesign.utils.callbacks import LRLogger, EpochTimeLogger, TimeLimitCallback
-from moldesign.score.nfp import make_data_loader, ReduceAtoms
-import traceback
 
 def sigmod(x):
     return 1 / (1 + math.exp(-x))
@@ -115,9 +110,13 @@ class InferFunction(KeyedProcessFunction):
         
         #self.model_paras = weights
         #self.state.update(weights)
+        import tensorflow as tf
+        import nfp
+        from moldesign.utils.conversions import convert_string_to_dict
+        from moldesign.score.nfp import make_data_loader, ReduceAtoms
         custom_objects = nfp.custom_objects.copy()
         custom_objects['ReduceAtoms'] = ReduceAtoms
-        
+
         # Perform inference inside a try/except so we can log tracebacks and return safely
         try:
             # Load mpnn model

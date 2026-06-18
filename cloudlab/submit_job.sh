@@ -27,7 +27,10 @@ cd "$HOME/MoStream/MoStream/MDStream/StreamML"
 find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 rm -rf tmp/
 
-echo "=== Submitting PyFlink job (Kafka: $KAFKA_HOST) ==="
-"$HOME/flink/bin/flink" run \
+FLINK_HOME="${FLINK_HOME:-$HOME/flink}"
+PARALLELISM="${PARALLELISM:-1}"
+echo "=== Submitting PyFlink job (Flink: $FLINK_HOME, Kafka: $KAFKA_HOST, Parallelism: $PARALLELISM) ==="
+"$FLINK_HOME/bin/flink" run \
+  -p "$PARALLELISM" \
   -py MDWorkflow.py \
   --kafka-bootstrap "$KAFKA_HOST:9092"

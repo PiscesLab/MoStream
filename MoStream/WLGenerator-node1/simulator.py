@@ -119,7 +119,8 @@ if __name__ == "__main__":
 
               time.sleep(args.interval)
               timestamp = int(time.time() * 1000)
-              model_id = random.choice(range(1))
+              #model_id = random.choice(range(1))
+              model_id = (model_id + 1) % 16
               data = {"timestamp": timestamp, "smiles": smiles_train, "inchi": "", "IP_simulate": ip_train, "model_id": model_id}
               SendData()
 

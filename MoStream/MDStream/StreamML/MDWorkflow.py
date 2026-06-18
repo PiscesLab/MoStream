@@ -60,11 +60,17 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     config = Configuration()
     config.set_string("taskmanager.memory.network.min", "512m")
     config.set_string("taskmanager.memory.network.max", "512m")
+    config.set_string("python.fn-execution.bundle.time", "60000")
+    config.set_string("python.fn-execution.bundle.size", "1")
+    config.set_string("python.executable",
+                      "/users/NamSDSU/miniconda3/envs/mostream/bin/python3.9")
     env = StreamExecutionEnvironment.get_execution_environment(config)
 
     # --- JARs: use URIs (handles spaces automatically)
     jars_dir = Path(__file__).resolve().parents[3] / "jars"
-    kafka_connector = (jars_dir / "flink-connector-kafka-4.0.1-2.0.jar").as_uri()
+    kafka_connector_2 = jars_dir / "flink-connector-kafka-4.0.1-2.0.jar"
+    kafka_connector_117 = jars_dir / "flink-connector-kafka-3.1.0-1.17.jar"
+    kafka_connector = (kafka_connector_117 if kafka_connector_117.exists() else kafka_connector_2).as_uri()
     kafka_clients   = (jars_dir / "kafka-clients-3.6.1.jar").as_uri()
     env.add_jars(kafka_connector, kafka_clients)
 
@@ -73,7 +79,8 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     env.add_python_file(str(streamml_dir))
 
     env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
-    
+    env.enable_checkpointing(30000)  # flush KafkaSink AT_LEAST_ONCE every 30s
+
     # Configure the KafkaSource (consumer)
     if local_mode:
         # use an in-memory collection for local testing
