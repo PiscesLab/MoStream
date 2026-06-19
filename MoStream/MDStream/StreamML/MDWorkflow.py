@@ -68,9 +68,7 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
 
     # --- JARs: use URIs (handles spaces automatically)
     jars_dir = Path(__file__).resolve().parents[3] / "jars"
-    kafka_connector_2 = jars_dir / "flink-connector-kafka-4.0.1-2.0.jar"
-    kafka_connector_117 = jars_dir / "flink-connector-kafka-3.1.0-1.17.jar"
-    kafka_connector = (kafka_connector_117 if kafka_connector_117.exists() else kafka_connector_2).as_uri()
+    kafka_connector = (jars_dir / "flink-connector-kafka-4.0.1-2.0.jar").as_uri()
     kafka_clients   = (jars_dir / "kafka-clients-3.6.1.jar").as_uri()
     env.add_jars(kafka_connector, kafka_clients)
 
