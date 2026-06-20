@@ -29,8 +29,7 @@ class TrainFunction(KeyedProcessFunction):
         from moldesign.score.nfp import ReduceAtoms
         print("train reach open")
         self.state = runtime_context.get_state(ValueStateDescriptor('training_dataset', Types.LIST(Types.STRING())))
-        tf.config.threading.set_intra_op_parallelism_threads(2)
-        tf.config.threading.set_inter_op_parallelism_threads(1)
+
 
         custom_objects = nfp.custom_objects.copy()
         custom_objects['ReduceAtoms'] = ReduceAtoms
