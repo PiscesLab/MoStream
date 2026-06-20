@@ -116,6 +116,10 @@ class InferFunction(KeyedProcessFunction):
         from moldesign.score.nfp import make_data_loader, ReduceAtoms
         custom_objects = nfp.custom_objects.copy()
         custom_objects['ReduceAtoms'] = ReduceAtoms
+        if hasattr(nfp, 'GlobalUpdate'):  custom_objects['GlobalUpdate']  = nfp.GlobalUpdate
+        if hasattr(nfp, 'EdgeUpdate'):    custom_objects['EdgeUpdate']    = nfp.EdgeUpdate
+        if hasattr(nfp, 'NodeUpdate'):    custom_objects['NodeUpdate']    = nfp.NodeUpdate
+        if hasattr(nfp, 'ConcatDense'):   custom_objects['ConcatDense']   = nfp.ConcatDense
 
         # Perform inference inside a try/except so we can log tracebacks and return safely
         try:
