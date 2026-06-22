@@ -60,8 +60,8 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     config = Configuration()
     config.set_string("taskmanager.memory.network.min", "512m")
     config.set_string("taskmanager.memory.network.max", "512m")
-    config.set_string("python.fn-execution.bundle.time", "60000")
-    config.set_string("python.fn-execution.bundle.size", "100")
+    config.set_string("python.fn-execution.bundle.time", "1000")
+    config.set_string("python.fn-execution.bundle.size", "100000")
     config.set_string("python.executable",
                       "/users/NamSDSU/miniconda3/envs/mostream/bin/python3.9")
     env = StreamExecutionEnvironment.get_execution_environment(config)
