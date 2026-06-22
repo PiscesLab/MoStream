@@ -30,6 +30,19 @@ class TrainFunction(KeyedProcessFunction):
         print("train reach open")
         self.state = runtime_context.get_state(ValueStateDescriptor('training_dataset', Types.LIST(Types.STRING())))
 
+        subtask_idx = runtime_context.get_index_of_this_subtask()
+        self._model_ckpt = f"/tmp/mostream_weights_{subtask_idx}.json"
+        if os.path.exists(self._model_ckpt):
+            try:
+                with open(self._model_ckpt) as f:
+                    self.model_paras = f.read()
+                print(f"[TrainFunction] Resumed weights from {self._model_ckpt}")
+            except Exception as e:
+                print(f"[TrainFunction] Checkpoint load failed, starting fresh: {e}")
+                self.model_paras = None
+        else:
+            print(f"[TrainFunction] No checkpoint at {self._model_ckpt}, starting fresh")
+
 
         custom_objects = nfp.custom_objects.copy()
         custom_objects['ReduceAtoms'] = ReduceAtoms
@@ -171,6 +184,14 @@ class TrainFunction(KeyedProcessFunction):
         weights_json_str = json.dumps(weights)
         # Update model parameters state
         self.model_paras = weights_json_str
+        # Persist to disk so weights survive Beam worker recycle
+        try:
+            tmp = self._model_ckpt + ".tmp"
+            with open(tmp, 'w') as f:
+                f.write(weights_json_str)
+            os.replace(tmp, self._model_ckpt)
+        except Exception as e:
+            print(f"[TrainFunction] Checkpoint save failed: {e}")
         chunk_id = random.choice(range(2231))
         result = [str(chunk_id) + "$"+ weights_json_str + "$" + str(model_id) + "$" + self._infra_json_str]
         return result
