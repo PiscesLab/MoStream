@@ -34,7 +34,10 @@ WARN org.apache.pekko.remote.ReliableDeliverySupervisor - Association with remot
    # Should show: socat on 10.10.1.2:9998 AND java on 127.0.0.1:9998
    ```
 
-**This is automated in `setup_taskmanager.sh`.** If TM restarts, re-run setup or manually restart socat.
+**This is automated in `setup_taskmanager.sh`.** Whenever TM is restarted, run the dedicated restart script instead of bare `taskmanager.sh start` — it restarts TM and re-launches socat in one step:
+```bash
+bash ~/MoStream/cloudlab/restart_taskmanager.sh
+```
 
 ---
 

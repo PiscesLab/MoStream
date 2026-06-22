@@ -5,7 +5,7 @@ set -e
 
 echo "=== [1/2] Python packages ==="
 source ~/miniconda3/etc/profile.d/conda.sh && conda activate mostream
-pip install -q requests qcelemental
+pip install -q requests qcelemental kafka-python networkx rdkit scipy
 
 echo "=== [2/2] Create stub gitinfo.py ==="
 cat > ~/MoStream/MoStream/WLGenerator-node1/gitinfo.py << 'EOF'

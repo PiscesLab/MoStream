@@ -58,13 +58,14 @@ for i in $(seq 1 12); do
     sleep 5
 done
 
-# --- Create topics ---
+# --- Create topics (partitions must equal Flink job parallelism) ---
+PARTITIONS=${PARTITIONS:-8}
 for TOPIC in Simulation Recommend; do
     "$KAFKA_DIR/bin/kafka-topics.sh" --create --if-not-exists \
         --topic "$TOPIC" \
         --bootstrap-server localhost:9092 \
-        --replication-factor 1 --partitions 1
-    echo "[kafka] Topic '$TOPIC' ready."
+        --replication-factor 1 --partitions "$PARTITIONS"
+    echo "[kafka] Topic '$TOPIC' ready ($PARTITIONS partitions)."
 done
 
 echo "[kafka] Setup complete. Topics:"

@@ -23,13 +23,18 @@ grep -q "metrics.internal.query-service.port" ~/flink/conf/config.yaml || \
     echo "metrics.internal.query-service.port: 9998" >> ~/flink/conf/config.yaml
 # Increase process size to accommodate extra off-heap
 grep -q "taskmanager.memory.task.off-heap.size" ~/flink/conf/config.yaml || \
-    echo "taskmanager.memory.task.off-heap.size: 512m" >> ~/flink/conf/config.yaml
+    echo "taskmanager.memory.task.off-heap.size: 4096m" >> ~/flink/conf/config.yaml
 grep -q "taskmanager.memory.framework.off-heap.size" ~/flink/conf/config.yaml || \
     echo "taskmanager.memory.framework.off-heap.size: 256m" >> ~/flink/conf/config.yaml
 grep -q "taskmanager.memory.managed.size" ~/flink/conf/config.yaml || \
     echo "taskmanager.memory.managed.size: 512m" >> ~/flink/conf/config.yaml
-# Increase process size (must be done in nested YAML section)
-sed -i '/taskmanager\.memory/,/process/{s/size: 1728m/size: 2560m/}' ~/flink/conf/config.yaml || true
+grep -q "taskmanager.memory.task.heap.size" ~/flink/conf/config.yaml || \
+    echo "taskmanager.memory.task.heap.size: 3072m" >> ~/flink/conf/config.yaml
+grep -q "taskmanager.memory.process.size" ~/flink/conf/config.yaml || \
+    echo "taskmanager.memory.process.size: 10112m" >> ~/flink/conf/config.yaml
+# flink.size: task.heap(3072) + task.off-heap(4096) + managed(512) + network(512) + framework.off-heap(256) + framework.heap(128) = 8576m
+sed -i '/^taskmanager\.memory\.flink\.size:/d' ~/flink/conf/config.yaml
+echo "taskmanager.memory.flink.size: 8576m" >> ~/flink/conf/config.yaml
 
 echo "=== [3/4] Python packages ==="
 source ~/miniconda3/etc/profile.d/conda.sh && conda activate mostream
