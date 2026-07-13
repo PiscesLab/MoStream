@@ -19,7 +19,7 @@ echo "=== pulling artifacts ==="
 timeout 90 scp -q $S "$TM:~/tm_memory.log" results/e1/tm_memory.log 2>/dev/null \
   && echo "  memory trace   : $(wc -l < results/e1/tm_memory.log) samples"
 timeout 150 ssh $S "$TM" \
-  "grep -h 'TRAINPROF subtask=[0-9]\|INFERPROF chunk=[0-9]' ~/flink/log/*taskexecutor*.log 2>/dev/null | grep -v print" \
+  "grep -h 'TRAINPROF subtask=[0-9]\|INFERPROF chunk=[0-9]' ~/flink/log/*taskexecutor*.log 2>/dev/null | grep -v 'print('" \
   > results/profile/prof.txt 2>/dev/null \
   && echo "  cost profile   : $(wc -l < results/profile/prof.txt) samples"
 timeout 90 scp -q $S "$JM:~/results/e0_tuned.csv" results/e0/e0_tuned.csv 2>/dev/null \

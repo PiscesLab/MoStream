@@ -25,14 +25,26 @@ import statistics
 import sys
 
 KV = re.compile(r'(\w+)=([-\d.]+)')
+TS = re.compile(r'^(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)')
 
 
-def parse(path):
+def parse(path, since=None):
+    """Parse profile lines, optionally only those logged at/after `since`.
+
+    The TaskManager log is CUMULATIVE across jobs -- it is not rotated on resubmit. Reading
+    it without a time filter silently mixes samples from different builds of the code, which
+    is exactly how a 'before vs after' comparison can come out showing no change when the
+    change is real. Always pass --since <job start> when comparing.
+    """
     train, infer = [], []
     for line in open(path, errors='replace'):
-        if 'TRAINPROF' in line:
+        if since:
+            m = TS.match(line)
+            if not m or m.group(1) < since:
+                continue
+        if 'TRAINPROF subtask=' in line:
             train.append({k: float(v) for k, v in KV.findall(line)})
-        elif 'INFERPROF' in line:
+        elif 'INFERPROF chunk=' in line:
             infer.append({k: float(v) for k, v in KV.findall(line)})
     return train, infer
 
@@ -58,7 +70,11 @@ def table(rows, fields, title, total_key):
 
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else 'prof.txt'
-    train, infer = parse(path)
+    since = None
+    if '--since' in sys.argv:
+        since = sys.argv[sys.argv.index('--since') + 1]
+        print(f"  (only samples logged at or after {since})")
+    train, infer = parse(path, since)
 
     print("=" * 66)
     print("  PER-RECORD COST BREAKDOWN")
