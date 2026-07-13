@@ -63,13 +63,34 @@ class InferFunction(KeyedProcessFunction):
         #self.search_space = load_search_space_all()
         self.state = None
         self.chunk_id_list = []
-        #self.model_paras = None
+        # The Keras model, built ONCE and reused. See open() for why this matters.
+        self._model = None
         print("infer finished init")
 
     def open(self, runtime_context: RuntimeContext):
         print("infer reach open")
         self.state = runtime_context.get_state(ValueStateDescriptor('search_space', Types.LIST(Types.STRING())))
-        #self.state = runtime_context.get_state(ValueStateDescriptor('search_space', Types.STRING()))
+
+        # self._model is built lazily on the first record, because the architecture arrives
+        # in the record (Train ships it alongside the weights) rather than being available
+        # here. It is then REUSED for the life of the operator, and only its weights are
+        # replaced per record.
+        #
+        # It used to be rebuilt with model_from_json() on EVERY record. That single line was
+        # responsible for two separate symptoms:
+        #
+        #   1. Cost. Rebuilding the architecture took a median of 2.69s per record -- more
+        #      than half of Infer's 8.0s path, and the largest single entry in the per-record
+        #      cost profile. The architecture is identical on every record.
+        #
+        #   2. A memory leak. Each model_from_json() creates a fresh Keras model and
+        #      TensorFlow retains state for it. The Beam Python worker processes grew from
+        #      1.8 GB to 20.7 GB over 5.5 hours (+2.2 GB/h) with no asymptote. Because the
+        #      workers are separate OS processes, no Flink budget bounds them and no Flink
+        #      metric reports them; the run survived only because the node has 62 GB.
+        #
+        # TrainFunction has always built its model once in open(). InferFunction did not.
+        self._model = None
         print("infer finished open")
   
     def process_element(self, new_tuple, ctx: 'KeyedProcessFunction.Context') -> List:
@@ -131,8 +152,14 @@ class InferFunction(KeyedProcessFunction):
         # --- data movement (only an architectural change would).
         import time as _t
         try:
+            # Build the architecture ONCE, then reuse it. Rebuilding it per record cost
+            # 2.69s and leaked ~2.2 GB/hour into the Python worker (see open()).
             _t0 = _t.perf_counter()
-            model = tf.keras.models.model_from_json(infra_json_str, custom_objects=custom_objects)
+            if self._model is None:
+                self._model = tf.keras.models.model_from_json(
+                    infra_json_str, custom_objects=custom_objects)
+                print("[InferFunction] model built once; reusing for the life of the operator")
+            model = self._model
             _t_build = _t.perf_counter() - _t0
 
             _t0 = _t.perf_counter()
@@ -141,6 +168,7 @@ class InferFunction(KeyedProcessFunction):
             _t_loads = _t.perf_counter() - _t0
             _payload_mb = len(weights_json_str) / 1048576.0
 
+            # Only the WEIGHTS change per record. This is the whole per-record model update.
             _t0 = _t.perf_counter()
             model.set_weights(weights)
             _t_setw = _t.perf_counter() - _t0
