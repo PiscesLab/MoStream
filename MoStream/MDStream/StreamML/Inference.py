@@ -177,7 +177,7 @@ class InferFunction(KeyedProcessFunction):
                   f"build={_t_build:.3f} loads={_t_loads:.3f} setw={_t_setw:.3f} "
                   f"prep={_t_prep:.3f} predict={_t_predict:.3f} "
                   f"transfer={_t_transfer:.3f} work={_t_work:.3f} "
-                  f"payload_mb={_payload_mb:.2f}", flush=True)
+                  f"payload_mb={_payload_mb:.2f}")
         except Exception:
             print(f"Exception during inference for chunk {chunk_id}:")
             traceback.print_exc()

@@ -207,7 +207,7 @@ class TrainFunction(KeyedProcessFunction):
         print(f"TRAINPROF subtask={self._subtask} model_id={model_id} "
               f"fit={_t_fit:.3f} tolist={_t_tolist:.3f} dumps={_t_dumps:.3f} "
               f"persist={_t_persist:.3f} total={_t_total:.3f} payload_mb={_payload_mb:.2f} "
-              f"loss={train_loss[-1]:.4f} mae={train_mae[-1]:.4f}", flush=True)
+              f"loss={train_loss[-1]:.4f} mae={train_mae[-1]:.4f}")
 
         chunk_id = random.choice(range(2231))
         result = [str(chunk_id) + "$"+ weights_json_str + "$" + str(model_id) + "$" + self._infra_json_str + "$" + str(src_ts)]
