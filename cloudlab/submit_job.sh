@@ -37,8 +37,18 @@ FLINK_HOME="${FLINK_HOME:-$HOME/flink}"
 PARALLELISM="${PARALLELISM:-1}"
 echo "=== Submitting PyFlink job (Flink: $FLINK_HOME, Kafka: $KAFKA_HOST, Parallelism: $PARALLELISM) ==="
 PYTHON_EXEC="${PYTHON_EXEC:-$HOME/miniconda3/envs/mostream/bin/python3.9}"
+# Kafka offsets/group. MDWorkflow.py defaults to --starting-offset latest and
+# --group-id my-group. Reusing a group id across submissions (including cancelled jobs)
+# is the #1 cause of "job runs, source reads 0 records, Recommend stays empty".
+# Default to a FRESH group id per submission; override with GROUP_ID=... if resuming.
+STARTING_OFFSET="${STARTING_OFFSET:-earliest}"
+GROUP_ID="${GROUP_ID:-mostream-$(date +%s)}"
+echo "=== Kafka: starting-offset=$STARTING_OFFSET  group-id=$GROUP_ID ==="
+
 "$FLINK_HOME/bin/flink" run -d \
   -p "$PARALLELISM" \
   -pyexec "$PYTHON_EXEC" \
   -py MDWorkflow.py \
-  --kafka-bootstrap "$KAFKA_HOST:9092"
+  --kafka-bootstrap "$KAFKA_HOST:9092" \
+  --starting-offset "$STARTING_OFFSET" \
+  --group-id "$GROUP_ID"
