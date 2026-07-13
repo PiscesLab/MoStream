@@ -60,7 +60,7 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     config = Configuration()
     config.set_string("taskmanager.memory.network.min", "512m")
     config.set_string("taskmanager.memory.network.max", "512m")
-    config.set_string("python.fn-execution.bundle.time", "60000")
+    config.set_string("python.fn-execution.bundle.time", "60000") 
     config.set_string("python.fn-execution.bundle.size", "1")
     config.set_string("python.executable",
                       "/users/NamSDSU/miniconda3/envs/mostream/bin/python3.9")
@@ -119,23 +119,32 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     else:
         stream = env.from_source(kafka_source, WatermarkStrategy.no_watermarks(), "Source-data")
 
-    # Parse the JSON stream and extract desired fields
+    # Parse the JSON stream and extract desired fields.
+    # src_ts is the producer-side wall-clock (ms) stamped by the simulator. It is carried
+    # unchanged through Train -> Infer -> Rank so that each emitted recommendation can be
+    # attributed to the simulation result that caused it. This is the E0 (steering latency)
+    # measurement: latency = emit_ts - src_ts.
     extracted_stream = stream.map(lambda value: json.loads(value)).name("LoadJSON") \
-        .map(lambda obj: ((obj['smiles'], float(obj['IP_simulate']), int(obj['model_id']))), output_type=Types.TUPLE([Types.STRING(), Types.DOUBLE(), Types.INT()])).name("Parse")
- 
+        .map(lambda obj: ((obj['smiles'], float(obj['IP_simulate']), int(obj['model_id']), int(obj.get('timestamp', 0)))),
+             output_type=Types.TUPLE([Types.STRING(), Types.DOUBLE(), Types.INT(), Types.LONG()])).name("Parse")
+
     train_stream = extracted_stream.key_by(lambda x: x[2]) \
         .process(TrainFunction(), output_type=Types.STRING()) \
-        .map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], int(x.split("$")[2]), x.split("$")[3])), output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.INT(), Types.STRING()])).name("Parse->Train") 
-    # input string model_id,string
-    # output tuple (chunk_id, model-weigths, model_id, model-infra)
+        .map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], int(x.split("$")[2]), x.split("$")[3], int(x.split("$")[4]))),
+             output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.INT(), Types.STRING(), Types.LONG()])).name("Parse->Train")
+    # input  tuple (smiles, IP, model_id, src_ts)
+    # output tuple (chunk_id, model-weights, model_id, model-infra, src_ts)
+    # TrainFunction fits ONE record then emits, so the weights it emits provably incorporate
+    # the record carrying src_ts. That is what makes the latency attribution causal.
 
     #train_stream.print()
     #infer_stream = train_stream.reduce(lambda a, b: (average(a[1], b[1]), a[0]))
     infer_stream = train_stream.key_by(lambda x: x[0]) \
         .process(InferFunction(), output_type=Types.STRING()) \
-        .map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], float(x.split("$")[2]))), output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.DOUBLE()])).name("Train->Infer")
-    # input string chunk_id, string (json) model-weights, string, model_id, string (json) model-infra
-    # output tuple (int chunk_id, string smiles, float estimated_IP)
+        .map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], float(x.split("$")[2]), int(x.split("$")[3]))),
+             output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.DOUBLE(), Types.LONG()])).name("Train->Infer")
+    # input  tuple (chunk_id, model-weights, model_id, model-infra, src_ts)
+    # output tuple (chunk_id, smiles, estimated_IP, src_ts)
  
     #infer2_stream = extracted_stream.key_by(lambda x: x[2]) \
     #    .process(InferFunction(), output_type=Types.STRING()) \

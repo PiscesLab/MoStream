@@ -83,6 +83,9 @@ class TrainFunction(KeyedProcessFunction):
         new_x = new_tuple[0]
         new_y = new_tuple[1]
         model_id = int(new_tuple[2])
+        # E0: producer-side timestamp (ms) of the simulation result being trained on.
+        # Carried through unchanged so Rank can attribute its output back to this record.
+        src_ts = int(new_tuple[3]) if len(new_tuple) > 3 else 0
         #print("model_id", model_id)
 
         if (current_dataset is None):
@@ -121,7 +124,7 @@ class TrainFunction(KeyedProcessFunction):
         print("train_y: ", train_y)
 
         if (len(current_dataset) < self.batch_size):
-           result = [str(model_id) + "$"+ "haaah" + "$" + str(model_id) + "$" + "haaah"]
+           result = [str(model_id) + "$"+ "haaah" + "$" + str(model_id) + "$" + "haaah" + "$" + str(src_ts)]
            #print("result_list", result)
            return result
 
@@ -193,5 +196,5 @@ class TrainFunction(KeyedProcessFunction):
         except Exception as e:
             print(f"[TrainFunction] Checkpoint save failed: {e}")
         chunk_id = random.choice(range(2231))
-        result = [str(chunk_id) + "$"+ weights_json_str + "$" + str(model_id) + "$" + self._infra_json_str]
+        result = [str(chunk_id) + "$"+ weights_json_str + "$" + str(model_id) + "$" + self._infra_json_str + "$" + str(src_ts)]
         return result

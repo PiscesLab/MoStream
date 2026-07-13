@@ -25,10 +25,16 @@ class RankFunction(AllWindowFunction):
         # update state and inference
         smiles_list = []
         value_list = []
+        # E0: newest simulation result whose training update is reflected in this window.
+        # We take the max so the reported latency is the *conservative* one: the delay for the
+        # freshest result to reach a recommendation, not for a stale one already in the pipe.
+        src_ts = 0
         for est in inputs:
             chunk_id = int(est[0])
             est_smiles = est[1]
             est_ip = float(est[2])
+            if len(est) > 3:
+                src_ts = max(src_ts, int(est[3]))
             #print("chunk_id: ", chunk_id, " est_ip: ", est_ip)
             if "model_not_ready" in est_smiles:
                result = ["smiles: " + "model_not_ready" + " ucb: " + str(0) + " est_ip: " + str(0) + " timestamp: " + str(int(time.time() * 1000)) + "$"]
@@ -63,6 +69,11 @@ class RankFunction(AllWindowFunction):
         sorted_smiles = sorted(molecules, key=molecules.get, reverse=True)
         
         # output recommend
+        emit_ts = int(time.time() * 1000)
+        # E0 steering latency: wall-clock delay from the simulation result entering the
+        # workflow to this recommendation, which the model has now trained on. -1 means the
+        # upstream producer did not stamp the record (no attribution possible).
+        latency_ms = (emit_ts - src_ts) if src_ts > 0 else -1
         result = []
         count = 0
         for smiles in sorted_smiles:
@@ -71,8 +82,12 @@ class RankFunction(AllWindowFunction):
                #if (smiles not in self.searched):
                if (smiles not in self.searched) and (count < 10):
                   self.searched.append(smiles)
-                  line = "smiles: " + smiles + " ucb: " + str(molecules[smiles]) + " est_ip: " + str(molecules[smiles]) + " timestamp: " + str(int(time.time() * 1000)) + "$"
-                  #line = "smiles: " + smiles + " ucb: " + str(molecules[smiles]) + " est_ip: " + str(np.mean(self.state.get(smiles))) + "$"
+                  line = ("smiles: " + smiles
+                          + " ucb: " + str(molecules[smiles])
+                          + " est_ip: " + str(molecules[smiles])
+                          + " timestamp: " + str(emit_ts)
+                          + " src_ts: " + str(src_ts)
+                          + " latency_ms: " + str(latency_ms) + "$")
                   result.append(line)
                   count = count + 1
-        return result 
+        return result
