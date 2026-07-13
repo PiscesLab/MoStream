@@ -51,10 +51,25 @@ except Exception as e:
     PY_COUNT=$(ps aux | grep -E "python.*beam_sdk_worker|python.*pyflink" \
         | grep -v grep | wc -l)
 
+    # --- Training metrics from TM log (model_id 0, latest + rolling avg of last 5) ---
+    TM_LOG=$(ls ~/flink/log/flink-*-taskexecutor-0-*.log 2>/dev/null | grep -v '\.[0-9]*$' | head -1)
+    if [ -n "$TM_LOG" ]; then
+        M0_LOSS=$(grep "model_id:  0  train_loss:" "$TM_LOG" 2>/dev/null \
+            | tail -1 | grep -oP '[\d.]+(?=\])' | awk '{printf "%.2f",$1}')
+        M0_AVG=$(grep "model_id:  0  train_loss:" "$TM_LOG" 2>/dev/null \
+            | tail -5 | grep -oP '[\d.]+(?=\])' \
+            | awk '{s+=$1;n++} END{if(n>0) printf "%.2f",s/n}')
+        M0_MAE=$(grep "model_id:  0  train_mae:" "$TM_LOG" 2>/dev/null \
+            | tail -1 | grep -oP '[\d.]+(?=\])' | awk '{printf "%.2f",$1}')
+        TRAIN="m0_loss=${M0_LOSS:-n/a}(avg5=${M0_AVG:-n/a})  m0_mae=${M0_MAE:-n/a}"
+    else
+        TRAIN="m0_loss=n/a(no_log)  m0_mae=n/a"
+    fi
+
     # --- System memory ---
     SYS=$(free -h | awk '/^Mem:/{print "sys_used="$3"/"$2}')
 
-    LINE="$TS  pid=$TM_PID  rss=${RSS_MB}MB  $METRICS  py_workers=${PY_COUNT}x${PY_MB}  $SYS"
+    LINE="$TS  pid=$TM_PID  rss=${RSS_MB}MB  $METRICS  py_workers=${PY_COUNT}x${PY_MB}  $TRAIN  $SYS"
     echo "$LINE" | tee -a "$LOGFILE"
 
     sleep "$INTERVAL"

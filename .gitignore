@@ -21,5 +21,9 @@ __MACOSX/
 cloudlab/cluster.conf
 
 
-# Report
-*.tex
+
+# WSL / Windows interop junk
+*:Zone.Identifier
+
+# Reference PDFs kept locally, not in history (prior submissions, slides)
+paper/*.pdf
