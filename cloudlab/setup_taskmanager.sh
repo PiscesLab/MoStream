@@ -67,9 +67,6 @@ if ! command -v java >/dev/null 2>&1; then
     sudo apt-get install -y -qq openjdk-17-jre-headless
 fi
 
-# --- socat (metrics relay; see step 5) ---
-command -v socat >/dev/null 2>&1 || sudo apt-get install -y -qq socat
-
 # --- Flink ---
 if [ ! -d "$FLINK_HOME" ]; then
     echo "[TM] Downloading Flink $FLINK_VERSION..."
@@ -95,8 +92,9 @@ set_cfg "jobmanager.rpc.address"                "$JM_IP"
 set_cfg "taskmanager.host"                      "$TM_IP"
 set_cfg "taskmanager.bind-host"                 "0.0.0.0"
 set_cfg "taskmanager.numberOfTaskSlots"         "$SLOTS"
-# Flink 2.0's MetricQueryService binds 127.0.0.1 but advertises the external IP; pinning the
-# port lets the socat relay bridge the gap (see step 5).
+# Pin the MetricQueryService port so monitoring has a stable target. With bind-host 0.0.0.0
+# the metrics actor binds 0.0.0.0:9998 itself and the JobManager reaches it directly -- no
+# relay needed. Nothing else may hold this port before the TM starts (see the note below).
 set_cfg "metrics.internal.query-service.port"   "9998"
 
 # --- Memory: the whole point of the arm flag ---
@@ -175,15 +173,16 @@ sudo mkdir -p /mnt/media/MDStream/StreamML/networks
 sudo chmod -R 777 /mnt/media/MDStream
 mkdir -p "$HOME/MoStream/MoStream/MDStream/StreamML/search_space"
 
-# --- Metrics relay ---
-# Without this the JobManager cannot reach the TM's MetricQueryService, so plot_heap.py
-# collects nothing -- and the memory experiments (E1/E2) become unmeasurable. It is
-# retained in BOTH arms on purpose: the crash arm exists to be observed.
-pkill -f "socat.*9998" 2>/dev/null || true
-nohup socat TCP-LISTEN:9998,bind=${TM_IP},reuseaddr,fork TCP:127.0.0.1:9998 \
-    > /tmp/socat-metrics.log 2>&1 &
-disown
-echo "[TM] socat relay: ${TM_IP}:9998 -> 127.0.0.1:9998"
+# --- NO socat metrics relay. ---
+# The old tooling ran a socat relay on 9998 "because the MetricQueryService binds 127.0.0.1
+# but advertises the external IP". That is not true once taskmanager.bind-host is 0.0.0.0:
+# the metrics actor binds 0.0.0.0:9998 itself and the JobManager reaches it directly
+# (verified on Flink 2.0.0 -- all 38 TM metrics resolve, including the Heap.Used /
+# Direct.MemoryUsed pair that monitor_taskmanager.sh scrapes).
+# Worse, socat GRABBED 9998 first, so the TaskManager could not bind it and died at startup:
+#   ERROR NettyTransport - failed to bind to host:0.0.0.0 port:9998, shutting down
+#   Caused by: java.net.BindException: Could not start actor system on any port in range 9998
+# Do not reintroduce it.
 
 echo ""
 echo "=== TaskManager configured (arm=$ARM) ==="
