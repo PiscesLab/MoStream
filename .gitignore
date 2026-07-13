@@ -27,3 +27,6 @@ cloudlab/cluster.conf
 
 # Reference PDFs kept locally, not in history (prior submissions, slides)
 paper/*.pdf
+
+# Root-level scratch .tex (slide decks). paper/*.tex IS tracked.
+/*.tex
