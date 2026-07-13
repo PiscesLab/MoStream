@@ -301,7 +301,50 @@ def fig_latency():
     save(fig, 'fig_latency_cdf')
 
 
-FIGS = {'memory': fig_memory, 'invisible': fig_invisible_memory, 'cost': fig_cost,
+
+
+def fig_leak():
+    """Python worker RSS grows without bound, and no engine budget bounds it.
+
+    The single most consequential measurement in the paper: the workers are separate OS
+    processes, so Flink's memory model does not see them at all, and Infer's per-record
+    Keras model construction leaks into them.
+    """
+    rows = read_mem('results/e1/tm_memory.log')
+    rows = [r for r in rows if r['py'] > 0]
+    if len(rows) < 10:
+        print('  [skip] leak: not enough samples')
+        return
+    x = [r['min'] / 60.0 for r in rows]          # hours
+    y = [r['py'] / 1024.0 for r in rows]         # GB
+    d = [r['direct'] / 1024.0 for r in rows]
+    h = [r['heap_used'] / 1024.0 for r in rows]
+
+    fig, ax = plt.subplots(figsize=(COL, 1.8))
+    ax.plot(x, y, color=YELLOW, ls='-', label='Python workers')
+    ax.plot(x, h, color=BLUE, ls='--', label='JVM heap')
+    ax.plot(x, d, color=AQUA, ls=':', label='JVM direct')
+
+    # linear fit on the worker series -> the growth rate is the headline
+    n = len(x)
+    mx, my = sum(x)/n, sum(y)/n
+    num = sum((xi-mx)*(yi-my) for xi, yi in zip(x, y))
+    den = sum((xi-mx)**2 for xi in x) or 1e-9
+    slope = num/den
+    ax.annotate(f'{slope:+.1f} GB/hour', xy=(x[len(x)//2], y[len(y)//2]),
+                xytext=(x[len(x)//3], max(y)*1.12), fontsize=7, color=INK,
+                arrowprops=dict(arrowstyle='-|>', color=MUTED, lw=0.7))
+
+    ax.set_xlabel('Elapsed time (h)')
+    ax.set_ylabel('Resident memory (GB)')
+    ax.set_ylim(0, max(y)*1.30)
+    ax.grid(axis='y'); ax.set_axisbelow(True)
+    ax.legend(loc='upper left', bbox_to_anchor=(0.0, -0.32), ncol=3, handlelength=1.5,
+              labelcolor=INK2, borderpad=0.2, columnspacing=1.0)
+    save(fig, 'fig_worker_leak')
+
+
+FIGS = {'leak': fig_leak, 'memory': fig_memory, 'invisible': fig_invisible_memory, 'cost': fig_cost,
         'restarts': fig_restarts, 'latency': fig_latency}
 
 if __name__ == '__main__':
