@@ -12,6 +12,19 @@ from typing import List, Any, Optional, Tuple, Dict, Union
 def sigmod(x):
     return 1 / (1 + math.exp(-x))
 
+
+# Molecule padding is quantized to this many atoms. Every distinct padded size produces a
+# distinct input SHAPE, and every distinct shape makes TensorFlow retrace its graph and
+# retain a new ConcreteFunction forever. Bucketing bounds the number of shapes, and hence
+# the number of retained graphs, at (max molecule size / BUCKET) rather than at the number
+# of records processed. See the call sites for the measured cost of not doing this.
+_ATOM_BUCKET = 16
+
+
+def _bucket_size(n):
+    """Round a molecule size up to the next multiple of _ATOM_BUCKET."""
+    return int(((int(n) + _ATOM_BUCKET - 1) // _ATOM_BUCKET) * _ATOM_BUCKET)
+
 def _default_search_space_path():
     import os
     # 1. Explicit override via env var
@@ -182,7 +195,20 @@ class InferFunction(KeyedProcessFunction):
             if mol_dicts.size == 0:
                 print(f"Warning: mol_dicts empty after conversion for chunk {chunk_id}")
                 return [str(chunk_id) + "$" + "mol_dicts_empty" + "$" + str(0) + "$" + str(src_ts)]
-            max_size = max(len(x['atom']) for x in mol_dicts)
+            # Quantize the padded molecule size to a bucket.
+            #
+            # make_data_loader pads every molecule to max_size, so max_size determines the
+            # SHAPE of the tensor handed to model.predict(). Taking the exact per-chunk
+            # maximum means the shape changes on almost every record, and TensorFlow responds
+            # by RETRACING predict_function and retaining a new ConcreteFunction each time.
+            # It never releases them. Measured: 256 retracing warnings and Python worker RSS
+            # climbing at +15 GB/hour, which no Flink budget bounds because the workers are
+            # separate OS processes.
+            #
+            # Rounding up to a multiple of BUCKET collapses hundreds of distinct shapes into a
+            # handful, so TensorFlow traces a few graphs and then stops. The cost is a little
+            # extra padding; the alternative is unbounded graph retention.
+            max_size = _bucket_size(max(len(x['atom']) for x in mol_dicts))
             batch_size = len(mol_dicts)
 
             loader = make_data_loader(

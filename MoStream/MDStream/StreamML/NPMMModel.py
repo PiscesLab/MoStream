@@ -7,6 +7,18 @@ from pyflink.datastream.state import ValueStateDescriptor
 from pyflink.common.typeinfo import Types
 from typing import List, Any, Optional, Tuple, Dict, Union
 
+
+# Molecule padding is quantized to this many atoms. Every distinct padded size is a distinct
+# input SHAPE, and every distinct shape makes TensorFlow retrace its graph and retain a new
+# ConcreteFunction indefinitely. Must match Inference._ATOM_BUCKET.
+_ATOM_BUCKET = 16
+
+
+def _bucket_size(n):
+    """Round a molecule size up to the next multiple of _ATOM_BUCKET."""
+    return int(((int(n) + _ATOM_BUCKET - 1) // _ATOM_BUCKET) * _ATOM_BUCKET)
+
+
 class TrainFunction(KeyedProcessFunction):
 
     def __init__(self):
@@ -112,7 +124,11 @@ class TrainFunction(KeyedProcessFunction):
             y_tmp.append(float(item.split(",")[1]))
             #y_tmp.append(y_new)
         mol_dicts = np.array(x_tmp)
-        max_size = max(len(x['atom']) for x in mol_dicts)
+        # Quantize the padded molecule size, for the same reason as InferFunction: an exact
+        # per-window maximum changes the input SHAPE on nearly every record, TensorFlow
+        # retraces its graph, and it retains every traced ConcreteFunction. Bucketing bounds
+        # the number of distinct shapes, and hence the retained graphs, at a small constant.
+        max_size = _bucket_size(max(len(x['atom']) for x in mol_dicts))
         y = np.array(y_tmp)
 
         # Make the training and validation splits
