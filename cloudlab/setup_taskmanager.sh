@@ -101,7 +101,7 @@ set_cfg "metrics.internal.query-service.port"   "9998"
 # Wipe every taskmanager.memory.* key first so arms never contaminate each other.
 sed -i '/^taskmanager\.memory\./d' "$CONFIG"
 if [ "$ARM" = "tuned" ]; then
-    # Budget derived in cloudlab/notes.md. Off-heap is sized for the two consumers Flink's
+    # Budget derived in docs/cloudlab_notes.md. Off-heap is sized for the two consumers Flink's
     # own budget cannot see: TensorFlow's native (JNI) tensor allocations, and the Beam
     # portability layer's gRPC/Netty direct byte buffers.
     #   flink.size = task.heap 3072 + task.off-heap 4096 + managed 512
