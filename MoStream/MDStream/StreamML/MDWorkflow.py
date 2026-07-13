@@ -90,7 +90,24 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     env.add_python_file(str(streamml_dir))
 
     env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
-    env.enable_checkpointing(30000)  # flush KafkaSink AT_LEAST_ONCE every 30s
+
+    # Checkpointing. A checkpoint barrier must traverse every operator, and our operators
+    # take SECONDS per record (Train ~1.5s, Infer ~8s). Under backpressure a barrier can
+    # take far longer than the default 10-minute checkpoint timeout to reach the sink, the
+    # checkpoint fails, and once the tolerable-failure threshold is hit Flink kills the job:
+    #
+    #   FlinkRuntimeException: Exceeded checkpoint tolerable failure threshold
+    #
+    # This is a third failure mode of hosting heavy ML in a stream engine, distinct from the
+    # heap and direct-buffer exhaustion of Section 5: the engine's fault-tolerance mechanism
+    # itself assumes cheap, fast operators. We widen the interval and timeout to match the
+    # real per-record cost, and tolerate transient failures rather than dying on the first.
+    env.enable_checkpointing(60000)  # flush KafkaSink AT_LEAST_ONCE every 60s
+    _ckpt = env.get_checkpoint_config()
+    _ckpt.set_checkpoint_timeout(600000)            # 10 min for a barrier to traverse
+    _ckpt.set_tolerable_checkpoint_failure_number(10)
+    _ckpt.set_min_pause_between_checkpoints(30000)  # don't stack barriers under backpressure
+    _ckpt.set_max_concurrent_checkpoints(1)
 
     # Configure the KafkaSource (consumer)
     if local_mode:
