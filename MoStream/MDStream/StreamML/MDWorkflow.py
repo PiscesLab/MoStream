@@ -60,8 +60,21 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     config = Configuration()
     config.set_string("taskmanager.memory.network.min", "512m")
     config.set_string("taskmanager.memory.network.max", "512m")
-    config.set_string("python.fn-execution.bundle.time", "60000") 
-    config.set_string("python.fn-execution.bundle.size", "1")
+
+    # Bundle settings govern how many records the Python operator buffers before flushing a
+    # bundle to the Beam worker, and how long it will wait to do so. A bundle completes when
+    # EITHER limit is hit, so with size=1 the time limit never fires: every record is its own
+    # bundle, flushed immediately. That is the lowest-latency configuration and is why it is
+    # the default here.
+    #
+    # These are the knobs experiment E4 sweeps. Overridable so the sweep can be scripted
+    # without editing this file (which would change the job graph between arms).
+    bundle_size = os.environ.get("MOSTREAM_BUNDLE_SIZE", "1")
+    bundle_time = os.environ.get("MOSTREAM_BUNDLE_TIME", "60000")
+    config.set_string("python.fn-execution.bundle.size", bundle_size)
+    config.set_string("python.fn-execution.bundle.time", bundle_time)
+    print(f"[MDWorkflow] bundle.size={bundle_size} bundle.time={bundle_time}")
+
     config.set_string("python.executable",
                       "/users/NamSDSU/miniconda3/envs/mostream/bin/python3.9")
     env = StreamExecutionEnvironment.get_execution_environment(config)
