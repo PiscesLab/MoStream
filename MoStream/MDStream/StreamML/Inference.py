@@ -123,24 +123,37 @@ class InferFunction(KeyedProcessFunction):
         if hasattr(nfp, 'NodeUpdate'):    custom_objects['NodeUpdate']    = nfp.NodeUpdate
         if hasattr(nfp, 'ConcatDense'):   custom_objects['ConcatDense']   = nfp.ConcatDense
 
-        # Perform inference inside a try/except so we can log tracebacks and return safely
+        # --- PROFILING: the Infer half of the per-record model-transfer cost. Infer must
+        # --- rebuild the model architecture, parse the ~13.6 MB weight payload, and
+        # --- reinstate it ON EVERY RECORD before it scores a single molecule. These timers
+        # --- separate that fixed transfer cost from the actual scoring work, which is what
+        # --- tells us whether the bottleneck is compute (a faster machine would help) or
+        # --- data movement (only an architectural change would).
+        import time as _t
         try:
-            # Load mpnn model
+            _t0 = _t.perf_counter()
             model = tf.keras.models.model_from_json(infra_json_str, custom_objects=custom_objects)
+            _t_build = _t.perf_counter() - _t0
+
+            _t0 = _t.perf_counter()
             weights_list = json.loads(weights_json_str)
             weights = [np.array(arr) for arr in weights_list]
-            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
+            _t_loads = _t.perf_counter() - _t0
+            _payload_mb = len(weights_json_str) / 1048576.0
+
+            _t0 = _t.perf_counter()
             model.set_weights(weights)
-            print("infer model loading finished")
+            _t_setw = _t.perf_counter() - _t0
 
             # prepare inference args and loader
+            _t0 = _t.perf_counter()
             x_tmp = []
             for smiles_search in tmp_search_space:
                 x_tmp.append(convert_string_to_dict(smiles_search))
             mol_dicts = np.array(x_tmp)
             if mol_dicts.size == 0:
                 print(f"Warning: mol_dicts empty after conversion for chunk {chunk_id}")
-                return [str(chunk_id) + "$" + "mol_dicts_empty" + "$" + str(0)]
+                return [str(chunk_id) + "$" + "mol_dicts_empty" + "$" + str(0) + "$" + str(src_ts)]
             max_size = max(len(x['atom']) for x in mol_dicts)
             batch_size = len(mol_dicts)
 
@@ -150,10 +163,21 @@ class InferFunction(KeyedProcessFunction):
                 repeat=False,
                 max_size=max_size,
             )
+            _t_prep = _t.perf_counter() - _t0
 
             # predicted IP — the single predict() for this chunk. Inference over the whole
             # chunk dominates the loop's steering latency, so it must not be repeated.
+            _t0 = _t.perf_counter()
             pred_y = np.squeeze(model.predict(loader))
+            _t_predict = _t.perf_counter() - _t0
+
+            _t_transfer = _t_build + _t_loads + _t_setw   # cost of RECEIVING the model
+            _t_work    = _t_prep + _t_predict             # cost of actually SCORING
+            print(f"INFERPROF chunk={chunk_id} n_mols={len(tmp_search_space)} "
+                  f"build={_t_build:.3f} loads={_t_loads:.3f} setw={_t_setw:.3f} "
+                  f"prep={_t_prep:.3f} predict={_t_predict:.3f} "
+                  f"transfer={_t_transfer:.3f} work={_t_work:.3f} "
+                  f"payload_mb={_payload_mb:.2f}", flush=True)
         except Exception:
             print(f"Exception during inference for chunk {chunk_id}:")
             traceback.print_exc()

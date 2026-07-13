@@ -31,6 +31,7 @@ class TrainFunction(KeyedProcessFunction):
         self.state = runtime_context.get_state(ValueStateDescriptor('training_dataset', Types.LIST(Types.STRING())))
 
         subtask_idx = runtime_context.get_index_of_this_subtask()
+        self._subtask = subtask_idx
         self._model_ckpt = f"/tmp/mostream_weights_{subtask_idx}.json"
         if os.path.exists(self._model_ckpt):
             try:
@@ -149,7 +150,13 @@ class TrainFunction(KeyedProcessFunction):
         except ValueError:
             pass
 
-        #print("Start model fit")
+        # --- PROFILING: attribute the per-record cost. The measured service rate of Train
+        # --- is only ~0.15 rec/s (~53 s of work per record per sub-task), which is far more
+        # --- than one gradient step on 16 molecules should cost. These timers say where it
+        # --- actually goes. Emitted as a single parseable line per record; parse with
+        # --- cloudlab/parse_train_profile.py.
+        import time as _t
+        _t0 = _t.perf_counter()
         history = self._model.fit(
             train_loader,
             epochs=self.num_epochs,
@@ -160,34 +167,33 @@ class TrainFunction(KeyedProcessFunction):
             validation_steps=valid_steps,
             validation_freq=1
         )
-        print("Finish model fit")
+        _t_fit = _t.perf_counter() - _t0
 
-        #print("history keys: ", history.history.keys())
-
-        # Load the loss value and MAE from the history object
         train_loss = history.history['loss']
-        print("model_id: ", model_id, " train_loss: ", train_loss)
-        #test_loss = history.history['val_loss']
-        #print("model_id: ", model_id, " train_loss: ", test_loss)
         train_mae = history.history['mean_absolute_error']
-        print("model_id: ", model_id, " train_mae: ", train_mae)
-        #test_mae = history.history['val_mean_absolute_error']
-        #print("model_id: ", model_id, " test_mae: ", test_mae)
 
-        # Convert weights to numpy arrays (avoids mmap issues)
+        # get_weights() -> nested Python lists. This is where the model becomes data.
+        _t0 = _t.perf_counter()
         weights = []
         for v in self._model.get_weights():
             v = np.array(v)
             if np.isnan(v).any():
                 raise ValueError('Found some NaN weights.')
             weights.append(v.tolist())
+        _t_tolist = _t.perf_counter() - _t0
 
-        #print("weights length: ", len(self._model.get_weights()), len(weights))
-        # Save model parameters
+        # Serialize the ENTIRE model to a JSON string -- ~13.6 MB in our configuration --
+        # once per record. This string is then (a) written to disk and (b) emitted into the
+        # dataflow, where Infer must parse it back and reinstate it.
+        _t0 = _t.perf_counter()
         weights_json_str = json.dumps(weights)
-        # Update model parameters state
+        _t_dumps = _t.perf_counter() - _t0
+        _payload_mb = len(weights_json_str) / 1048576.0
+
         self.model_paras = weights_json_str
-        # Persist to disk so weights survive Beam worker recycle
+
+        # Persist to disk so weights survive a worker restart (see E6).
+        _t0 = _t.perf_counter()
         try:
             tmp = self._model_ckpt + ".tmp"
             with open(tmp, 'w') as f:
@@ -195,6 +201,14 @@ class TrainFunction(KeyedProcessFunction):
             os.replace(tmp, self._model_ckpt)
         except Exception as e:
             print(f"[TrainFunction] Checkpoint save failed: {e}")
+        _t_persist = _t.perf_counter() - _t0
+
+        _t_total = _t_fit + _t_tolist + _t_dumps + _t_persist
+        print(f"TRAINPROF subtask={self._subtask} model_id={model_id} "
+              f"fit={_t_fit:.3f} tolist={_t_tolist:.3f} dumps={_t_dumps:.3f} "
+              f"persist={_t_persist:.3f} total={_t_total:.3f} payload_mb={_payload_mb:.2f} "
+              f"loss={train_loss[-1]:.4f} mae={train_mae[-1]:.4f}", flush=True)
+
         chunk_id = random.choice(range(2231))
         result = [str(chunk_id) + "$"+ weights_json_str + "$" + str(model_id) + "$" + self._infra_json_str + "$" + str(src_ts)]
         return result
