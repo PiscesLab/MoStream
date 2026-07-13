@@ -114,17 +114,9 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
       .set_starting_offsets(offsets) \
       .set_value_only_deserializer(SimpleStringSchema()) \
       .build() 
-    # --- Sink (producer)
-    sink = KafkaSink.builder() \
-    .set_bootstrap_servers(kafka_bootstrap) \
-    .set_record_serializer(
-        KafkaRecordSerializationSchema.builder()
-            .set_topic("Recommend")
-            .set_value_serialization_schema(SimpleStringSchema())
-            .build()
-    ) \
-    .set_delivery_guarantee(DeliveryGuarantee.AT_LEAST_ONCE) \
-    .build()
+    # NOTE: the KafkaSink is built once, further below, immediately before sink_to().
+    # A second, earlier KafkaSink.builder() used to sit here; it was dead code -- the
+    # variable was reassigned before use, so the object was constructed and discarded.
 
     # Add the source to the Flink pipeline
     if local_mode:
