@@ -113,7 +113,17 @@ if [ "$ARM" = "tuned" ]; then
     set_cfg "taskmanager.memory.network.min"               "512m"
     set_cfg "taskmanager.memory.network.max"               "512m"
     set_cfg "taskmanager.memory.flink.size"                "8576m"
-    set_cfg "taskmanager.memory.process.size"              "10112m"
+    # process = flink + jvm-metaspace + jvm-overhead. Flink DERIVES jvm-overhead as
+    # (process - flink - metaspace) and then range-checks it against [192m, 1024m].
+    # The value in git (process.size 10112m) implies an overhead of
+    #   10112 - 8576 - 256 = 1280m  > 1024m max
+    # so it fails config validation and the TaskManager never starts:
+    #   IllegalConfigurationException: Derived JVM Overhead size (1.250gb) is not in
+    #   configured JVM Overhead range [192.000mb, 1024.000mb]
+    # Pin metaspace and size the process so the arithmetic closes exactly:
+    #   8576 (flink) + 256 (metaspace) + 1024 (overhead, at max) = 9856m
+    set_cfg "taskmanager.memory.jvm-metaspace.size"        "256m"
+    set_cfg "taskmanager.memory.process.size"              "9856m"
 else
     # PRE-FIX. task.heap deliberately UNSET so Flink auto-derives it (~640m) -- that is the
     # JVM-heap half of the bug. task.off-heap 512m is the direct-buffer half.
