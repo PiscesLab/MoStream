@@ -21,7 +21,7 @@ def _bucket_size(n):
 
 class TrainFunction(KeyedProcessFunction):
 
-    def __init__(self):
+    def __init__(self, persist_weights=True):
         #print("reach_init")
         self.state = None
         self.num_epochs = 1
@@ -32,7 +32,13 @@ class TrainFunction(KeyedProcessFunction):
         self.model_paras = None
         self._model = None          # built once in open()
         self._infra_json_str = None # cached architecture JSON (never changes)
-        print("finished init")
+        # Weight persistence on/off (E6). Passed IN rather than read from os.environ in open(),
+        # because environment variables set at job submission do NOT propagate to the Beam Python
+        # worker on the TaskManager (verified: the worker env has no MOSTREAM_* vars). A
+        # constructor argument is serialized WITH the operator and therefore does travel. The
+        # value is resolved client-side in MDWorkflow from MOSTREAM_PERSIST_WEIGHTS.
+        self._persist = bool(persist_weights)
+        print(f"finished init (persist_weights={self._persist})")
 
     def open(self, runtime_context: RuntimeContext):
         import h5py as _h5py
@@ -45,7 +51,13 @@ class TrainFunction(KeyedProcessFunction):
         subtask_idx = runtime_context.get_index_of_this_subtask()
         self._subtask = subtask_idx
         self._model_ckpt = f"/tmp/mostream_weights_{subtask_idx}.json"
-        if os.path.exists(self._model_ckpt):
+        # E6 ablation switch (self._persist), set in __init__ from the client-side flag. Weight
+        # persistence is the whole of contribution 2: after a worker teardown, open() re-executes,
+        # and the ONLY thing that lets training resume rather than restart from scratch is
+        # reloading the persisted weights here. With it off, both the reload (below) and the write
+        # (in the fit path) are skipped -- the no-persistence arm of E6 -- so every teardown resets
+        # the model to its initial weights and the training MAE should saw-tooth.
+        if self._persist and os.path.exists(self._model_ckpt):
             try:
                 with open(self._model_ckpt) as f:
                     self.model_paras = f.read()
@@ -53,6 +65,8 @@ class TrainFunction(KeyedProcessFunction):
             except Exception as e:
                 print(f"[TrainFunction] Checkpoint load failed, starting fresh: {e}")
                 self.model_paras = None
+        elif not self._persist:
+            print("[TrainFunction] MOSTREAM_PERSIST_WEIGHTS=0: NOT resuming (E6 no-persist arm)")
         else:
             print(f"[TrainFunction] No checkpoint at {self._model_ckpt}, starting fresh")
 
@@ -208,15 +222,17 @@ class TrainFunction(KeyedProcessFunction):
 
         self.model_paras = weights_json_str
 
-        # Persist to disk so weights survive a worker restart (see E6).
+        # Persist to disk so weights survive a worker restart (see E6). Gated by the E6 switch:
+        # the no-persistence arm writes nothing, so a re-executed open() finds no checkpoint.
         _t0 = _t.perf_counter()
-        try:
-            tmp = self._model_ckpt + ".tmp"
-            with open(tmp, 'w') as f:
-                f.write(weights_json_str)
-            os.replace(tmp, self._model_ckpt)
-        except Exception as e:
-            print(f"[TrainFunction] Checkpoint save failed: {e}")
+        if self._persist:
+            try:
+                tmp = self._model_ckpt + ".tmp"
+                with open(tmp, 'w') as f:
+                    f.write(weights_json_str)
+                os.replace(tmp, self._model_ckpt)
+            except Exception as e:
+                print(f"[TrainFunction] Checkpoint save failed: {e}")
         _t_persist = _t.perf_counter() - _t0
 
         _t_total = _t_fit + _t_tolist + _t_dumps + _t_persist

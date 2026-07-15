@@ -85,6 +85,12 @@ if __name__ == "__main__":
         unsearched_mol = inchi_list
         model_id = 0
         flag = 0
+        # Number of distinct model_id keys to cycle. Default 16 (one per ensemble slot). E6 sets
+        # MOSTREAM_NKEYS=1 so every record trains ONE model: warm-up (batch_size records for a
+        # key) then takes seconds instead of ~35 min, and the training-MAE trace is a single
+        # clean line rather than 16 interleaved ones -- which is exactly what the persistence
+        # ablation wants to plot.
+        n_keys = max(1, int(os.environ.get('MOSTREAM_NKEYS', '16')))
         kafka_bootstrap = os.environ.get('KAFKA_BOOTSTRAP', 'localhost:9092')
         producer = KafkaProducer(bootstrap_servers=[kafka_bootstrap], acks=1, retries=10, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
@@ -120,7 +126,7 @@ if __name__ == "__main__":
               time.sleep(args.interval)
               timestamp = int(time.time() * 1000)
               #model_id = random.choice(range(1))
-              model_id = (model_id + 1) % 16
+              model_id = (model_id + 1) % n_keys
               data = {"timestamp": timestamp, "smiles": smiles_train, "inchi": "", "IP_simulate": ip_train, "model_id": model_id}
               SendData()
 

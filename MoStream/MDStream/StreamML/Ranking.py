@@ -1,39 +1,76 @@
 import numpy as np
 import pickle as pkl
 import random, time
+from collections import OrderedDict
 
-from pyflink.datastream.functions import AllWindowFunction, RuntimeContext
+from pyflink.datastream.functions import WindowFunction, RuntimeContext
 from pyflink.datastream.state import MapStateDescriptor
 from pyflink.datastream.window import CountWindow
 from pyflink.common.typeinfo import Types
 from typing import List, Any, Optional, Tuple, Dict, Union, Iterable
 
-class RankFunction(AllWindowFunction):
+class RankFunction(WindowFunction):
+    """Rank a window of scored candidates and emit the unseen ones, best first.
+
+    KEYED, not global. This was an AllWindowFunction fed by `.key_by(chunk_id).window_all(...)`
+    -- and `window_all` DISCARDS the key_by and forces the operator to parallelism 1. The code
+    read as though it were data-parallel; Flink issues no warning. The consequence was severe,
+    because Rank sits downstream of Infer's 500x amplification: one Python worker absorbed ~500x
+    the record rate of the entire rest of the pipeline while the other seven slots sat idle.
+    Rank became the bottleneck (backpressure metrics: Rank 0% backpressured and the only busy
+    operator, everything upstream stalled), the Infer->Rank queue grew without bound, and the
+    resulting backpressure stopped checkpoint barriers from ever traversing the dataflow -- which
+    is what put the job into a checkpoint-timeout restart loop.
+
+    Keying by `chunk_id` is safe for de-duplication, which is the only cross-record state here:
+    Infer derives a chunk's candidates from a fixed slice of the search-space file
+    (lines [chunk_id*500, (chunk_id+1)*500)), so a given SMILES belongs to exactly ONE chunk and
+    therefore always lands on the SAME sub-task. Each sub-task's `searched` set is disjoint from
+    every other's, and the emitted set is identical to the parallelism-1 version.
+    """
+
+    # Bound on the de-duplication structure. Each sub-task only ever sees molecules from its own
+    # chunks; the whole search space is ~1.1M molecules split across 8 sub-tasks, so ~140k per
+    # sub-task. A 300k cap therefore covers a sub-task's entire reachable set with margin, so in
+    # practice nothing is ever evicted before it would legitimately be re-seen -- but the memory
+    # is bounded regardless of how long the campaign runs.
+    SEARCHED_CAP = 300000
 
     def __init__(self):
         print("rank reach_init")
-        # De-duplication of already-recommended molecules.
+        # De-duplication of already-recommended molecules, as a BOUNDED LRU set.
         #
-        # This was a LIST, which made `smiles not in self.searched` an O(n) linear scan on
-        # every candidate of every window. Because the set only ever grows, the operator's
-        # cost is linear in the number of molecules recommended SO FAR, so the whole loop
-        # decelerates as the campaign progresses: measured service rate fell from
-        # 0.15 rec/s to 0.023 rec/s (6.5x) once ~234k molecules had been recommended, and
-        # Rank backpressured Infer, Train, and the source in turn.
+        # History: this was first a LIST (membership an O(n) linear scan, so the loop
+        # decelerated as the campaign grew: 0.15 -> 0.023 rec/s once ~234k molecules had been
+        # recommended), then an unbounded set() (membership O(1), but the set grew for the life
+        # of the operator). Neither is safe in a long-running stream operator, whose state lives
+        # as long as the job.
         #
-        # A set makes membership O(1). The state is still unbounded in MEMORY -- which is
-        # the honest limit of this design, and is why a production deployment would want a
-        # bounded structure (a Bloom filter, or Flink keyed state with a TTL) instead of an
-        # instance variable that lives for the life of the operator.
-        self.searched = set()
+        # An OrderedDict used as an LRU set keeps membership O(1) AND bounds the memory: on
+        # insert past SEARCHED_CAP we evict the oldest key. This is the concrete form of the
+        # "bounded structure" the design has always needed; a production system might instead use
+        # a Bloom filter or engine-managed keyed state with a TTL. NOTE: this bounds the DEDUP
+        # structure only. It is not the main driver of the slow (~0.8 GB/h) Python-worker growth
+        # observed over long runs, which is TensorFlow/Beam accumulation in the worker process
+        # and is why the workers must eventually be recycled (making weight persistence load-
+        # bearing for multi-day operation).
+        self.searched = OrderedDict()
         print("rank finished init")
+
+    def _mark_recommended(self, smiles):
+        """Record a just-recommended molecule; evict the oldest if over the cap. O(1)."""
+        self.searched[smiles] = None
+        if len(self.searched) > self.SEARCHED_CAP:
+            self.searched.popitem(last=False)
 
     def open(self, runtime_context: RuntimeContext):
         print("rank reach open")
         self.state = runtime_context.get_map_state(MapStateDescriptor('mol_dicts', Types.STRING(), Types.LIST(Types.DOUBLE()))) 
         print("rank finished open")
   
-    def apply(self, window: CountWindow, inputs: Iterable[tuple]) -> List:
+    def apply(self, key, window: CountWindow, inputs: Iterable[tuple]) -> List:
+        # `key` is the chunk_id this window belongs to (see the class docstring). The keyed
+        # signature takes it as the first argument; the AllWindowFunction one did not.
         #print("rank inputs: ", inputs)
         # update state and inference
         smiles_list = []
@@ -90,17 +127,20 @@ class RankFunction(AllWindowFunction):
         result = []
         count = 0
         for smiles in sorted_smiles:
-            #if (np.mean(self.state.get(smiles)) > 14):
-            #if (np.mean(self.state.get(smiles)) > 0.5):
-               #if (smiles not in self.searched):
-               if (smiles not in self.searched) and (count < 10):
-                  self.searched.add(smiles)
-                  line = ("smiles: " + smiles
-                          + " ucb: " + str(molecules[smiles])
-                          + " est_ip: " + str(molecules[smiles])
-                          + " timestamp: " + str(emit_ts)
-                          + " src_ts: " + str(src_ts)
-                          + " latency_ms: " + str(latency_ms) + "$")
-                  result.append(line)
-                  count = count + 1
+            if count >= 10:
+                break
+            # `in` on an OrderedDict is O(1), same as a set. Only molecules we actually
+            # recommend are recorded, so the ones we skip for lack of room stay eligible next
+            # window -- identical behaviour to the previous unbounded set(), but bounded.
+            if smiles in self.searched:
+                continue
+            self._mark_recommended(smiles)
+            line = ("smiles: " + smiles
+                    + " ucb: " + str(molecules[smiles])
+                    + " est_ip: " + str(molecules[smiles])
+                    + " timestamp: " + str(emit_ts)
+                    + " src_ts: " + str(src_ts)
+                    + " latency_ms: " + str(latency_ms) + "$")
+            result.append(line)
+            count = count + 1
         return result

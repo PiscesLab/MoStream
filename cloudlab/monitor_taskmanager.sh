@@ -51,19 +51,23 @@ except Exception as e:
     PY_COUNT=$(ps aux | grep -E "python.*beam_sdk_worker|python.*pyflink" \
         | grep -v grep | wc -l)
 
-    # --- Training metrics from TM log (model_id 0, latest + rolling avg of last 5) ---
+    # --- Training metrics from TM log ---
+    # Read the TRAINPROF line that NPMMModel.py actually emits. The old code grepped for
+    # "model_id:  0  train_loss:", a print() format the job stopped producing; since the TM
+    # log is cumulative, `tail -1` kept matching a line from a long-dead run and the reported
+    # loss/mae were FROZEN at a stale value for hours. Aggregate over the last 16 records
+    # (~one per model) rather than a single model_id, so one straggler cannot skew the view.
     TM_LOG=$(ls ~/flink/log/flink-*-taskexecutor-0-*.log 2>/dev/null | grep -v '\.[0-9]*$' | head -1)
     if [ -n "$TM_LOG" ]; then
-        M0_LOSS=$(grep "model_id:  0  train_loss:" "$TM_LOG" 2>/dev/null \
-            | tail -1 | grep -oP '[\d.]+(?=\])' | awk '{printf "%.2f",$1}')
-        M0_AVG=$(grep "model_id:  0  train_loss:" "$TM_LOG" 2>/dev/null \
-            | tail -5 | grep -oP '[\d.]+(?=\])' \
+        RECENT=$(grep "TRAINPROF subtask=" "$TM_LOG" 2>/dev/null | tail -16)
+        LOSS=$(echo "$RECENT" | tail -1 | grep -oP 'loss=\K[\d.]+' | awk '{printf "%.2f",$1}')
+        AVG=$(echo "$RECENT" | grep -oP 'loss=\K[\d.]+' \
             | awk '{s+=$1;n++} END{if(n>0) printf "%.2f",s/n}')
-        M0_MAE=$(grep "model_id:  0  train_mae:" "$TM_LOG" 2>/dev/null \
-            | tail -1 | grep -oP '[\d.]+(?=\])' | awk '{printf "%.2f",$1}')
-        TRAIN="m0_loss=${M0_LOSS:-n/a}(avg5=${M0_AVG:-n/a})  m0_mae=${M0_MAE:-n/a}"
+        MAE=$(echo "$RECENT" | grep -oP 'mae=\K[\d.]+' \
+            | awk '{s+=$1;n++} END{if(n>0) printf "%.2f",s/n}')
+        TRAIN="loss=${LOSS:-n/a}(avg16=${AVG:-n/a})  mae=${MAE:-n/a}"
     else
-        TRAIN="m0_loss=n/a(no_log)  m0_mae=n/a"
+        TRAIN="loss=n/a(no_log)  mae=n/a"
     fi
 
     # --- System memory ---

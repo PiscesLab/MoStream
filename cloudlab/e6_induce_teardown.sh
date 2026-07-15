@@ -61,7 +61,16 @@ while true; do
     # Pick one live Beam SDK worker. Killing a single worker (rather than the whole
     # TaskManager) is the closest analogue of an environment recycle: the JVM survives,
     # only the Python process holding the model dies.
-    pid=$(pgrep -f 'beam_sdk_worker\|pyflink_udf_runner\|apache_beam.runners.worker' | head -1)
+    # Match the actual Python worker, which runs `python -m pyflink.fn_execution.beam.beam_boot`.
+    # TWO traps here, both of which silently induced ZERO teardowns until fixed:
+    #   1. pgrep uses EXTENDED regex, so alternation is a bare '|'. An escaped '\|' matches a
+    #      literal pipe and never matches anything.
+    #   2. pgrep -f matches against the FULL command line, INCLUDING this script's own pgrep
+    #      invocation, so a plain pattern self-matches the shell running it and returns the wrong
+    #      PID (never the worker). The '[b]' bracket makes the pattern text in our own command
+    #      line ("beam_[b]oot") NOT match the regex, the classic `ps | grep [x]` trick, so only
+    #      the real worker matches.
+    pid=$(pgrep -f 'pyflink.fn_execution.beam.beam_[b]oot' | head -1)
 
     if [ -z "$pid" ]; then
         echo "$(date '+%F %T')  WARN  no Beam worker found (job warming up or down?)" | tee -a "$EVENTS"

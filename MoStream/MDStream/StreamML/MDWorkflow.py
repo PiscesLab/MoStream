@@ -77,6 +77,25 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
 
     config.set_string("python.executable",
                       "/users/NamSDSU/miniconda3/envs/mostream/bin/python3.9")
+
+    # Checkpoint storage. The engine's DEFAULT is JobManagerCheckpointStorage, which keeps
+    # checkpoint state in the JobManager's heap and CAPS each subtask's state at 5 MiB. That is
+    # fine for lightweight analytics state and fatal for ours: once a subtask's managed state
+    # crossed 5 MiB, every async snapshot failed with
+    #   "Size of the state is larger than the maximum permitted memory-backed state
+    #    (Size=6306404, maxSize=5242880). Consider using FileSystemCheckpointStorage."
+    # and, because the counter only resets on a SUCCESSFUL checkpoint, the failures accumulated
+    # toward the tolerable-failure threshold with no way back. This is the same class of defect
+    # as the barrier finding in Section 5.4: a fault-tolerance default sized for cheap operators.
+    # We select FileSystemCheckpointStorage, which writes checkpoints to a filesystem instead of
+    # the JM heap and imposes no such cap. These are the canonical Flink 2.0 keys
+    # (execution.checkpointing.*); the storage type is set EXPLICITLY rather than inferred from
+    # the dir, and both are verified present in flink-dist-2.0.0.jar. /proj is the CloudLab
+    # project NFS, mounted and writable on BOTH the JobManager and the TaskManager, which
+    # FileSystemCheckpointStorage requires (the TM writes state, the JM writes the metadata).
+    config.set_string("execution.checkpointing.storage", "filesystem")
+    config.set_string("execution.checkpointing.dir",
+                      "file:///proj/pisceslabsd-PG0/NamSDSU/flink-checkpoints")
     env = StreamExecutionEnvironment.get_execution_environment(config)
 
     # --- JARs: use URIs (handles spaces automatically)
@@ -91,21 +110,42 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
 
     env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
 
-    # Checkpointing. A checkpoint barrier must traverse every operator, and our operators
-    # take SECONDS per record (Train ~1.5s, Infer ~8s). Under backpressure a barrier can
-    # take far longer than the default 10-minute checkpoint timeout to reach the sink, the
-    # checkpoint fails, and once the tolerable-failure threshold is hit Flink kills the job:
+    # Checkpointing.
     #
-    #   FlinkRuntimeException: Exceeded checkpoint tolerable failure threshold
+    # An ALIGNED checkpoint barrier cannot overtake buffered records: it must wait for every
+    # record queued ahead of it to be processed. Its traversal time is therefore a function of
+    # the QUEUE, not of the per-record cost -- and that distinction is the whole story here.
     #
-    # This is a third failure mode of hosting heavy ML in a stream engine, distinct from the
-    # heap and direct-buffer exhaustion of Section 5: the engine's fault-tolerance mechanism
-    # itself assumes cheap, fast operators. We widen the interval and timeout to match the
-    # real per-record cost, and tolerate transient failures rather than dying on the first.
+    # An earlier version of this comment blamed the per-record cost ("our operators take
+    # SECONDS per record") and widened the timeout to compensate. That reasoning is wrong, and
+    # the fix it motivated does not work. With a SHALLOW queue these same 1.5s/8s operators
+    # checkpoint in 180 MILLISECONDS. It is only once a queue builds that traversal time
+    # explodes -- and under sustained backpressure the queue is unbounded, so NO timeout is
+    # large enough. Widening it only changes how long you wait before failing.
+    #
+    # What actually built the queue was Rank pinned to parallelism 1 by `window_all` (see the
+    # Rank operator below). Every checkpoint after that queue formed timed out; ten consecutive
+    # failures tripped the threshold; Flink killed the job; the restart restored from the last
+    # good checkpoint and REPLAYED the backlog, which rebuilt the queue. The job could never
+    # escape. Observed: 59 consecutive failed checkpoints and 5 forced restarts, with the last
+    # successful checkpoint six hours in the past.
+    #
+    # So the real remedy is upstream (do not let a parallelism-1 operator sit behind a 500x
+    # amplification), not here. What remains here is insurance: keep the interval and timeout
+    # sized to the real cost, and do not let a TRANSIENT backpressure spike terminate a
+    # multi-day endurance run. A missed checkpoint is affordable in this workflow -- the
+    # surrogate is persisted outside the checkpoint (see TrainFunction) and the Kafka sink is
+    # AT_LEAST_ONCE -- so it costs reprocessing, not correctness. Checkpoint health is measured
+    # directly from the REST API rather than inferred from the job staying alive.
     env.enable_checkpointing(60000)  # flush KafkaSink AT_LEAST_ONCE every 60s
     _ckpt = env.get_checkpoint_config()
     _ckpt.set_checkpoint_timeout(600000)            # 10 min for a barrier to traverse
-    _ckpt.set_tolerable_checkpoint_failure_number(10)
+    # With the Rank chokepoint removed and FileSystemCheckpointStorage in place, checkpoints
+    # succeed in tens of ms, so a large tolerance is no longer masking a spiral. Keep a modest
+    # one as genuine insurance for a multi-day run (a transient backpressure spike should cost a
+    # missed checkpoint, not the job) but small enough that a REAL regression surfaces quickly
+    # rather than after 1000 silent failures, which is how the 5 MiB cap hid for 15 hours.
+    _ckpt.set_tolerable_checkpoint_failure_number(20)
     _ckpt.set_min_pause_between_checkpoints(30000)  # don't stack barriers under backpressure
     _ckpt.set_max_concurrent_checkpoints(1)
 
@@ -150,8 +190,13 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
         .map(lambda obj: ((obj['smiles'], float(obj['IP_simulate']), int(obj['model_id']), int(obj.get('timestamp', 0)))),
              output_type=Types.TUPLE([Types.STRING(), Types.DOUBLE(), Types.INT(), Types.LONG()])).name("Parse")
 
+    # E6 flag, resolved HERE on the client (where the env var exists) and passed into the operator
+    # constructor so it is serialized with the operator and reaches the TaskManager's Python
+    # worker. Setting it via the submission environment does NOT reach the worker.
+    _persist_weights = os.environ.get("MOSTREAM_PERSIST_WEIGHTS", "1") == "1"
+    print(f"[MDWorkflow] persist_weights={_persist_weights}")
     train_stream = extracted_stream.key_by(lambda x: x[2]) \
-        .process(TrainFunction(), output_type=Types.STRING()) \
+        .process(TrainFunction(persist_weights=_persist_weights), output_type=Types.STRING()) \
         .map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], int(x.split("$")[2]), x.split("$")[3], int(x.split("$")[4]))),
              output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.INT(), Types.STRING(), Types.LONG()])).name("Parse->Train")
     # input  tuple (smiles, IP, model_id, src_ts)
@@ -174,7 +219,21 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
 
     #infer_stream = infer1_stream.union(infer2_stream)
 
-    rank_stream = infer_stream.key_by(lambda x: x[0]).window_all(CountTumblingWindowAssigner(10)) \
+    # Rank: a KEYED count window, not a global one.
+    #
+    # This was `.key_by(chunk_id).window_all(...)`. `window_all` DISCARDS the preceding key_by
+    # and pins the operator to parallelism 1 -- silently, with no warning, in a line that reads
+    # as if it were data-parallel. Because Rank sits downstream of Infer's 500x amplification,
+    # that single sub-task had to absorb ~500x the record rate of the whole rest of the
+    # pipeline while the other seven slots idled. It became the bottleneck, the Infer->Rank
+    # queue grew without bound, and the sustained backpressure prevented checkpoint barriers
+    # from ever traversing the dataflow -- which is what drove the checkpoint-timeout restart
+    # loop. One word.
+    #
+    # chunk_id is a safe key: a SMILES lives in exactly one chunk (Infer slices the search
+    # space by chunk_id), so it always routes to the same sub-task and RankFunction's `searched`
+    # de-duplication set stays correct per sub-task. See Ranking.RankFunction's docstring.
+    rank_stream = infer_stream.key_by(lambda x: x[0]).window(CountTumblingWindowAssigner(10)) \
         .apply(RankFunction(), output_type=Types.STRING()).name("Infer->Rank")
         #.map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], float(x.split("$")[2]))), output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.DOUBLE()]))
     #rank_stream = infer_stream.window_all(TumblingEventTimeWindows.of(Time.seconds(5))) \

@@ -64,7 +64,40 @@ MEM_RE = re.compile(
     r'py_workers=(?P<pn>\d+)x(?P<pm>\d+)MB')
 
 
-def read_mem(path):
+# --- EVERY READER TAKES A WINDOW. This is not optional. ---------------------------------
+# The memory trace and the TaskManager log are both CUMULATIVE: the monitor appends, and
+# nothing rotates either one on resubmit. Read either whole and you splice together runs of
+# DIFFERENT builds, with the job redeploys between them appearing as sharp drops. A growth
+# rate or a median fitted across that splice is an artifact of the splice.
+#
+# This is exactly the trap that produced the retracted "2.2 GB/h unbounded Python-worker
+# leak": the old fig_leak() read the whole trace, dropped the py==0 samples -- which are the
+# only visible evidence of a redeploy -- and then fitted ONE line through TWO runs. Per run,
+# the workers ramp for ~50 min and then sit flat at ~1.05 GB/worker. There is no leak.
+#
+# f875381 (build the Keras model once in open(), not per record) was deployed into the
+# running job at 17:57 on 2026-07-13. Before that timestamp the trace is the PRE-FIX build;
+# after it, HEAD. That is the one boundary the paper's before/after rests on.
+FIX_DEPLOY = '2026-07-13 17:57:30'
+
+SINCE = None      # --since: overrides the window start (use the clean E1 job start)
+UNTIL = None      # --until: overrides the window end
+
+# taskmanager.memory.process.size, our tuned budget. The engine's ENTIRE promise about the
+# TaskManager process -- and it does not cover the Python workers at all.
+PROCESS_SIZE_MB = 9856
+
+
+def _in_window(ts, since, until):
+    if since and ts < since:
+        return False
+    if until and ts > until:
+        return False
+    return True
+
+
+def read_mem(path, since=None, until=None):
+    since, until = since or SINCE, until or UNTIL
     rows = []
     if not os.path.exists(path):
         return rows
@@ -73,10 +106,12 @@ def read_mem(path):
         if not m:
             continue
         d = m.groupdict()
+        if not _in_window(d['ts'], since, until):
+            continue
         rows.append({
             't': datetime.strptime(d['ts'], '%Y-%m-%d %H:%M:%S').timestamp(),
             'rss': int(d['rss']), 'heap_used': int(d['hu']), 'heap_max': int(d['hm']),
-            'direct': int(d['du']), 'py': int(d['pm']),
+            'direct': int(d['du']), 'nproc': int(d['pn']), 'py': int(d['pm']),
         })
     if rows:
         t0 = rows[0]['t']
@@ -95,7 +130,7 @@ def fig_memory():
     timeline lives in fig_restarts, which uses a single base.
     """
     ctl = read_mem('results/e2_before/tm_memory_e2before.log')
-    trt = read_mem('results/e1/tm_memory.log')
+    trt = read_mem('results/e1/tm_memory.log', since=SINCE or FIX_DEPLOY)
     if not ctl:
         print('  [skip] memory: no control-arm trace')
         return
@@ -135,111 +170,131 @@ def fig_memory():
     save(fig, 'fig_heap_utilisation')
 
 
-def fig_invisible_memory():
-    """The Python workers are charged to the machine but to no Flink budget.
-
-    Flink's taskmanager.memory.process.size is a promise about the JVM process. The Beam
-    Python workers are separate OS processes and appear in no Flink budget. Size a container
-    to process.size and the workers push the machine past it.
-    """
-    trt = read_mem('results/e1/tm_memory.log')
-    if not trt:
-        print('  [skip] invisible memory: no trace')
-        return
-    r = trt[-1]
-    PROCESS_SIZE = 9856     # taskmanager.memory.process.size, our tuned budget
-
-    fig, ax = plt.subplots(figsize=(COL, 1.35))
-    ax.barh(0, r['rss'], height=0.45, color=BLUE, edgecolor='white', lw=0.8,
-            label='TaskManager JVM (budgeted)')
-    ax.barh(0, r['py'], left=r['rss'], height=0.45, color=YELLOW, edgecolor='white',
-            lw=0.8, hatch='///', label='Python workers (not budgeted)')
-    total = r['rss'] + r['py']
-
-    ax.axvline(PROCESS_SIZE, color=RED, ls='--', lw=1.1)
-    ax.text(PROCESS_SIZE, 0.42, f" Flink's budget\n {PROCESS_SIZE} MB",
-            fontsize=6.2, color=RED, va='bottom', ha='center')
-
-    ax.text(r['rss'] / 2, 0, f"{r['rss']} MB", ha='center', va='center',
-            fontsize=6.5, color='white')
-    ax.text(r['rss'] + r['py'] / 2, 0, f"{r['py']} MB", ha='center', va='center',
-            fontsize=6.5, color='white')
-    ax.text(total, -0.33, f'{total} MB', va='center', ha='center', fontsize=7, color=INK)
-
-    ax.set_yticks([]); ax.set_ylim(-0.45, 0.95)
-    ax.set_xlabel('Resident memory (MB)')
-    ax.set_xlim(0, max(total, PROCESS_SIZE) * 1.16)
-    ax.grid(axis='x'); ax.set_axisbelow(True)
-    ax.legend(loc='upper left', handlelength=1.4, labelcolor=INK2, borderpad=0.2,
-              bbox_to_anchor=(0.0, 1.35), ncol=1)
-    save(fig, 'fig_invisible_memory')
+# fig_invisible_memory() was DELETED, not disabled. It made the same point as fig_footprint
+# -- the workers are charged to the machine but to no engine budget -- as a snapshot bar of
+# the trace's LAST sample, which made it silently dependent on when the monitor happened to
+# stop. It read 3.5 GB when the last sample landed in warm-up and 16.5 GB when it landed on
+# the plateau, and the paper quoted the warm-up value in prose beside a figure drawn from
+# the plateau. fig_footprint carries the budget line as a horizontal reference instead, so
+# the same claim is made against the whole run rather than one arbitrary sample. At eight
+# pages, one figure making the point beats two disagreeing about it.
 
 
 # ---------------------------------------------------------------- cost breakdown
 KV = re.compile(r'(\w+)=([-\d.]+)')
+PROF_TS = re.compile(r'^(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)')
 
 
-def fig_cost():
-    """Nearly half the per-record cost is recomputation.
-
-    Two segments per stage, not seven: the per-phase detail is already in the paper's table,
-    and seven labelled segments collide at column width. Hatch carries the claim, so it
-    survives grayscale.
-    """
-    path = 'results/profile/prof.txt'
-    if not os.path.exists(path):
-        print('  [skip] cost: no profile data')
-        return
+def read_prof(path, since=None, until=None):
+    """Per-record phase timings, WINDOWED. The TaskManager log is cumulative -- see the note
+    on FIX_DEPLOY. Medianing the whole file averages the pre-fix and post-fix builds
+    together and describes a system that never existed."""
     tr, inf = [], []
+    if not os.path.exists(path):
+        return tr, inf
     for line in open(path, errors='replace'):
+        m = PROF_TS.match(line)
+        if not m or not _in_window(m.group(1), since, until):
+            continue
         if 'TRAINPROF subtask=' in line:
             tr.append({k: float(v) for k, v in KV.findall(line)})
         elif 'INFERPROF chunk=' in line:
             inf.append({k: float(v) for k, v in KV.findall(line)})
-    if not tr or not inf:
-        print('  [skip] cost: incomplete profile')
+    return tr, inf
+
+
+def med(rows, k):
+    v = [r[k] for r in rows if k in r]
+    return statistics.median(v) if v else 0.0
+
+
+def fig_cost():
+    """Removing one per-record recomputation halved the per-record path.
+
+    The bar that vanishes is the claim. Infer rebuilt the Keras model from its serialized
+    architecture on EVERY record; building it once in open() removes not only the 2.4s of
+    construction but the 3.1s of TensorFlow retracing it forced on `predict`.
+
+    Windowed at FIX_DEPLOY. Hatch carries the claim, so it survives grayscale.
+    """
+    path = 'results/postfix/prof_postfix.txt'
+    if not os.path.exists(path):
+        path = 'results/profile/prof.txt'
+    pre_tr, pre_inf = read_prof(path, until=FIX_DEPLOY)
+    post_tr, post_inf = read_prof(path, since=FIX_DEPLOY)
+    if not (pre_tr and pre_inf and post_tr and post_inf):
+        print('  [skip] cost: profile does not straddle the fix deploy')
         return
 
-    def med(rows, k):
-        v = [r[k] for r in rows if k in r]
-        return statistics.median(v) if v else 0.0
+    # The irreducible scoring cost is what `predict` costs with a WARM model -- i.e. its
+    # post-fix median. The pre-fix `predict` was 4.4x that, because a model rebuilt per
+    # record is a fresh object every time and TensorFlow must re-trace its prediction
+    # function. That retracing is a cost OF the rebuild, so it is charged to the rebuild and
+    # not to `predict`. Charging it to `predict` -- which is what a naive reading of the
+    # profile does -- understates the defect by more than half and makes the irreducible
+    # work look like it got faster, which is incoherent: the same 500 molecules are scored
+    # either way.
+    predict_warm = med(post_inf, 'predict')
 
-    stages = [
-        ('Infer', med(inf, 'predict'),
-                  med(inf, 'build') + med(inf, 'loads') + med(inf, 'setw') + med(inf, 'prep')),
-        ('Train', med(tr, 'fit') + med(tr, 'persist'),
-                  med(tr, 'dumps') + med(tr, 'tolist')),
-    ]
+    def split(tr, inf):
+        retrace = max(0.0, med(inf, 'predict') - predict_warm)
+        return [
+            # (stage, irreducible, cost of reconstructing/shipping the model per record)
+            ('Infer', med(inf, 'prep') + predict_warm,
+                      med(inf, 'build') + med(inf, 'loads') + med(inf, 'setw') + retrace),
+            ('Train', med(tr, 'fit') + med(tr, 'persist'),
+                      med(tr, 'dumps') + med(tr, 'tolist')),
+        ]
 
-    fig, ax = plt.subplots(figsize=(COL, 1.45))
-    for row, (name, need, avoid) in enumerate(stages):
-        ax.barh(row, need, height=0.5, color=BLUE, edgecolor='white', lw=0.8)
-        ax.barh(row, avoid, left=need, height=0.5, color=YELLOW, edgecolor='white',
-                lw=0.8, hatch='///')
-        if need > 0.7:
-            ax.text(need / 2, row, f'{need:.1f}s', ha='center', va='center',
-                    fontsize=6.5, color='white')
-        if avoid > 0.7:
-            ax.text(need + avoid / 2, row, f'{avoid:.1f}s', ha='center', va='center',
-                    fontsize=6.5, color='white')
-        ax.text(need + avoid + 0.15, row, f'{need+avoid:.1f}s', va='center',
-                fontsize=7, color=INK)
+    arms = [('after', split(post_tr, post_inf)), ('before', split(pre_tr, pre_inf))]
 
-    ax.set_yticks([0, 1]); ax.set_yticklabels(['Infer', 'Train'])
+    fig, ax = plt.subplots(figsize=(COL, 1.85))
+    ticks, labels = [], []
+    row = 0
+    for arm, stages in arms:
+        for name, need, avoid in stages:
+            ax.barh(row, need, height=0.62, color=BLUE, edgecolor='white', lw=0.8)
+            ax.barh(row, avoid, left=need, height=0.62, color=YELLOW, edgecolor='white',
+                    lw=0.8, hatch='///')
+            if need > 0.8:
+                ax.text(need / 2, row, f'{need:.1f}s', ha='center', va='center',
+                        fontsize=6.4, color='white')
+            if avoid > 0.8:
+                ax.text(need + avoid / 2, row, f'{avoid:.1f}s', ha='center', va='center',
+                        fontsize=6.4, color='white')
+            ax.text(need + avoid + 0.12, row, f'{need+avoid:.1f}s', va='center',
+                    fontsize=7, color=INK)
+            ticks.append(row); labels.append(f'\\textit{{{name}}}' if False else name)
+            row += 1
+        row += 0.55
+
+    ax.set_yticks(ticks); ax.set_yticklabels(labels)
+    tot_a = sum(n + a for _, n, a in arms[0][1])
+    tot_b = sum(n + a for _, n, a in arms[1][1])
+    ax.text(-0.02, 0.5 / len(ticks) + 0.06, 'after', transform=ax.transAxes, rotation=90,
+            fontsize=7, color=INK2, ha='right', va='center')
+    ax.text(-0.02, 0.80, 'before', transform=ax.transAxes, rotation=90,
+            fontsize=7, color=INK2, ha='right', va='center')
     ax.set_xlabel('Median time per record (s)')
-    ax.set_xlim(0, max(n + a for _, n, a in stages) * 1.16)
+    ax.set_xlim(0, max(tot_a, tot_b) * 1.18)
     ax.grid(axis='x'); ax.set_axisbelow(True)
 
-    tot = sum(n + a for _, n, a in stages)
-    av = sum(a for _, _, a in stages)
     from matplotlib.patches import Patch
-    ax.legend(handles=[Patch(facecolor=BLUE, label='necessary work'),
-                       Patch(facecolor=YELLOW, hatch='///', label='recomputed every record')],
-              loc='upper left', bbox_to_anchor=(0.0, -0.42), ncol=2,
+    ax.legend(handles=[Patch(facecolor=BLUE, label='irreducible work'),
+                       Patch(facecolor=YELLOW, hatch='///',
+                             label='re-creating the model, per record')],
+              loc='upper left', bbox_to_anchor=(0.0, -0.34), ncol=2,
               handlelength=1.4, labelcolor=INK2, borderpad=0.2, columnspacing=1.0)
-    ax.set_title(f'{100*av/tot:.0f}% of the {tot:.1f}s per-record path is recomputation',
-                 loc='left', color=INK2, pad=4, fontsize=7)
+    ax.set_title(f'per-record path: {tot_b:.1f}s $\\rightarrow$ {tot_a:.1f}s '
+                 f'({tot_b/tot_a:.1f}$\\times$)', loc='left', color=INK2, pad=4, fontsize=7)
     save(fig, 'fig_cost_breakdown')
+    print(f'      before={tot_b:.2f}s  after={tot_a:.2f}s  speedup={tot_b/tot_a:.2f}x')
+    for arm, stages in arms:
+        for name, need, avoid in stages:
+            print(f'      {arm:6s} {name:5s} irreducible={need:.2f}s  rebuild={avoid:.2f}s')
+    print(f'      predict: {med(pre_inf, "predict"):.2f}s cold-rebuilt -> '
+          f'{predict_warm:.2f}s warm  => {med(pre_inf,"predict")-predict_warm:.2f}s of the '
+          f'"predict" phase was retracing forced by the rebuild')
 
 
 # ---------------------------------------------------------------- restarts
@@ -260,7 +315,7 @@ def fig_restarts():
     ax.text(x[-1], y[-1], f'  {y[-1]} restarts', fontsize=7, color=RED, va='center')
 
     # Our budget: flat at zero for as long as we ran it.
-    e1 = read_mem('results/e1/tm_memory.log')
+    e1 = read_mem('results/e1/tm_memory.log', since=SINCE or FIX_DEPLOY)
     span = max(x[-1], (e1[-1]['min'] if e1 else 0)) * 1.05 or 20
     ax.plot([0, span], [0, 0], color=BLUE, ls='--')
     ax.text(span, 0.35, 'our budget: 0', fontsize=7, color=BLUE, ha='right')
@@ -303,54 +358,135 @@ def fig_latency():
 
 
 
-def fig_leak():
-    """Python worker RSS grows without bound, and no engine budget bounds it.
+def fig_footprint():
+    """The engine's budget is not a budget for the machine.
 
-    The single most consequential measurement in the paper: the workers are separate OS
-    processes, so Flink's memory model does not see them at all, and Infer's per-record
-    Keras model construction leaks into them.
+    Two-part story, and a long run is needed to see both parts:
+      (1) a fast warm-up ramp to ~17 GB in the first ~50 min -- a BOUNDED working set, and
+      (2) a slow ~0.8 GB/h growth ON TOP of it that only a multi-hour run reveals.
+    Either part alone misleads. A short trace sees only (1) and calls it 'no leak'; the
+    retracted fig_leak() fitted one line across two SPLICED runs and called the splice slope
+    a '2.2 GB/h leak'. The truth is a slow real leak of ~0.8 GB/h, measured within ONE run.
+
+    The structural point stands regardless: the Python workers are separate OS processes that
+    appear in no engine budget and no engine metric, and they cross the engine's entire
+    declared process.size before warm-up even finishes.
     """
-    rows = read_mem('results/e1/tm_memory.log')
+    rows = read_mem('results/e1/tm_memory.log', since=SINCE or FIX_DEPLOY)
     rows = [r for r in rows if r['py'] > 0]
     if len(rows) < 10:
-        print('  [skip] leak: not enough samples')
+        print('  [skip] footprint: not enough samples in window')
         return
     x = [r['min'] / 60.0 for r in rows]          # hours
-    y = [r['py'] / 1024.0 for r in rows]         # GB
-    d = [r['direct'] / 1024.0 for r in rows]
+    y = [r['py'] / 1024.0 for r in rows]         # GB, all Python workers
     h = [r['heap_used'] / 1024.0 for r in rows]
+    d = [r['direct'] / 1024.0 for r in rows]
+    budget = PROCESS_SIZE_MB / 1024.0
+    peak, nproc = max(y), rows[-1]['nproc']
 
-    fig, ax = plt.subplots(figsize=(COL, 1.8))
-    ax.plot(x, y, color=YELLOW, ls='-', label='Python workers')
+    fig, ax = plt.subplots(figsize=(COL, 1.95))
+    ax.plot(x, y, color=YELLOW, ls='-', label=f'Python workers ({nproc} procs)')
     ax.plot(x, h, color=BLUE, ls='--', label='JVM heap')
     ax.plot(x, d, color=AQUA, ls=':', label='JVM direct')
 
-    # linear fit on the worker series -> the growth rate is the headline
-    n = len(x)
-    mx, my = sum(x)/n, sum(y)/n
-    num = sum((xi-mx)*(yi-my) for xi, yi in zip(x, y))
-    den = sum((xi-mx)**2 for xi in x) or 1e-9
-    slope = num/den
-    ax.annotate(f'{slope:+.1f} GB/hour', xy=(x[len(x)//2], y[len(y)//2]),
-                xytext=(x[len(x)//3], max(y)*1.12), fontsize=7, color=INK,
+    # The engine's ENTIRE promise about the TaskManager -- crossed during warm-up.
+    ax.axhline(budget, color=RED, ls='--', lw=1.0)
+    ax.text(x[len(x)//2], budget, "engine's entire declared budget", fontsize=6.0,
+            color=RED, va='bottom', ha='center')
+
+    # Fit the POST-WARM-UP region to get the SLOW-LEAK rate. This is the honest number: it is
+    # NOT the whole-run slope (which folds in the warm-up ramp) and NOT zero (the series is not
+    # flat). Warm-up ends when the series first reaches ~90% of the warm-up plateau, which we
+    # take near the early maximum rather than the global one (the series keeps rising).
+    early_peak = max(y[:len(y)//3]) if len(y) >= 6 else peak
+    warm = next((i for i, v in enumerate(y) if v >= 0.9 * early_peak), 0)
+    xs, ys = x[warm:], y[warm:]
+    mx, my = sum(xs)/len(xs), sum(ys)/len(ys)
+    slope = sum((a-mx)*(b-my) for a, b in zip(xs, ys)) / (sum((a-mx)**2 for a in xs) or 1e-9)
+    # draw the fitted trend so the eye sees the steady climb
+    ax.plot([xs[0], xs[-1]], [my + slope*(xs[0]-mx), my + slope*(xs[-1]-mx)],
+            color=INK, ls='-', lw=0.8)
+    ax.annotate(f'{slope:+.1f} GB/h after warm-up', xy=(xs[len(xs)//2], my),
+                xytext=(x[0] + 0.04*(x[-1]-x[0]), peak*1.16), fontsize=6.8, color=INK,
                 arrowprops=dict(arrowstyle='-|>', color=MUTED, lw=0.7))
 
     ax.set_xlabel('Elapsed time (h)')
     ax.set_ylabel('Resident memory (GB)')
-    ax.set_ylim(0, max(y)*1.30)
+    ax.set_ylim(0, peak * 1.34)
     ax.grid(axis='y'); ax.set_axisbelow(True)
-    ax.legend(loc='upper left', bbox_to_anchor=(0.0, -0.32), ncol=3, handlelength=1.5,
+    ax.legend(loc='upper left', bbox_to_anchor=(0.0, -0.30), ncol=2, handlelength=1.5,
               labelcolor=INK2, borderpad=0.2, columnspacing=1.0)
-    save(fig, 'fig_worker_leak')
+    save(fig, 'fig_worker_footprint')
+    print(f'      window {len(x)} samples over {x[-1]:.2f} h; {nproc} workers')
+    print(f'      warm-up plateau ~{early_peak:.0f} GB ({early_peak*1024/PROCESS_SIZE_MB:.1f}x '
+          f'budget); end {peak:.0f} GB ({peak*1024/PROCESS_SIZE_MB:.1f}x)')
+    print(f'      post-warm-up slope {slope:+.2f} GB/h  <-- SLOW LEAK (not flat, not 2.2)')
 
 
-FIGS = {'leak': fig_leak, 'memory': fig_memory, 'invisible': fig_invisible_memory, 'cost': fig_cost,
-        'restarts': fig_restarts, 'latency': fig_latency}
+def _read_e6(tag):
+    """Return (elapsed_min, mae, teardown_mins) for arm `tag` from the CLEANED CSVs produced by
+    the collection step: arm{tag}.csv (min,mae) and arm{tag}_tds.txt (one teardown-minute per
+    line). We use pre-windowed CSVs rather than re-parsing the TaskManager log because that log
+    is BOTH cumulative across submissions AND rotated by size mid-run, so neither the whole file
+    nor its current tail isolates one arm; the collection step greps every rotation and windows
+    to the driver's [START, DONE] epochs once, here."""
+    csvp = f'results/e6/arm{tag}.csv'
+    tdp = f'results/e6/arm{tag}_tds.txt'
+    if not os.path.exists(csvp):
+        return None
+    xs, ys = [], []
+    for r in csv.DictReader(open(csvp)):
+        xs.append(float(r['min'])); ys.append(float(r['mae']))
+    tds = [float(l) for l in open(tdp)] if os.path.exists(tdp) else []
+    return xs, ys, tds
+
+
+def fig_persistence():
+    """E6: training MAE across induced worker teardowns, with vs without weight persistence.
+
+    The falsifiable prediction: WITHOUT persistence, open() rebuilds the model at its initial
+    weights on every teardown, so MAE saw-tooths back to its starting value; WITH persistence it
+    stays converged. If the sawtooth does not appear, contribution 2 is false.
+    """
+    A = _read_e6('A')   # persistence ON
+    B = _read_e6('B')   # persistence OFF
+    if not A:
+        print('  [skip] persistence: no arm-A data')
+        return
+    fig, ax = plt.subplots(figsize=(COL, 1.9))
+    if B:
+        xb, yb, tdb = B
+        ax.plot(xb, yb, color=RED, ls='-', label='without persistence')
+        for t in tdb:
+            ax.axvline(t, color=MUTED, lw=0.5, ls=(0, (1, 2)))
+    xa, ya, tda = A
+    ax.plot(xa, ya, color=BLUE, ls='-', label='with persistence')
+    for t in tda:
+        ax.axvline(t, color=MUTED, lw=0.5, ls=(0, (1, 2)))
+    ax.text(xa[-1] if xa else 1, 0, ' teardowns', fontsize=6, color=MUTED, va='bottom')
+    ax.set_xlabel('Elapsed time (min)')
+    ax.set_ylabel('Training MAE (V)')
+    ax.grid(axis='y'); ax.set_axisbelow(True)
+    ax.legend(loc='upper right', handlelength=1.5, labelcolor=INK2, borderpad=0.2)
+    save(fig, 'fig_persistence')
+    print(f'      arm A: {len(xa)} MAE samples, {len(tda)} teardowns, '
+          f'range {min(ya):.2f}-{max(ya):.2f}')
+    if B: print(f'      arm B: {len(xb)} MAE samples, {len(tdb)} teardowns, '
+                f'range {min(yb):.2f}-{max(yb):.2f}')
+
+
+FIGS = {'footprint': fig_footprint, 'memory': fig_memory, 'cost': fig_cost,
+        'restarts': fig_restarts, 'latency': fig_latency, 'persistence': fig_persistence}
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--only', choices=list(FIGS))
+    ap.add_argument('--since', metavar='"YYYY-MM-DD HH:MM:SS"',
+                    help='window start. The logs are CUMULATIVE across job redeploys; pass '
+                         'the job start so a growth rate is not fitted across a splice.')
+    ap.add_argument('--until', metavar='"YYYY-MM-DD HH:MM:SS"', help='window end')
     a = ap.parse_args()
+    SINCE, UNTIL = a.since, a.until
     for name, fn in FIGS.items():
         if a.only and name != a.only:
             continue
