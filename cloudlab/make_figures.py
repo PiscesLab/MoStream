@@ -385,7 +385,13 @@ def fig_footprint():
     peak, nproc = max(y), rows[-1]['nproc']
 
     fig, ax = plt.subplots(figsize=(COL, 1.95))
-    ax.plot(x, y, color=YELLOW, ls='-', label=f'Python workers ({nproc} procs)')
+    # No process count in the label. The monitor's py_workers COUNT is not the worker count:
+    # its grep matches the 8 `pyflink-udf-runner.sh` shell wrappers (~3 MB each) alongside the
+    # real `beam_boot` processes, plus any orphans left by a killed job, so it logs 18 where
+    # there are 8 real workers. The SUM is unaffected (wrappers hold ~0), so the series itself
+    # is sound; only the count is inflated. Older traces carry the inflated value, so we do not
+    # render it. The count belongs in the caption, from `pgrep -f beam_boot`.
+    ax.plot(x, y, color=YELLOW, ls='-', label='Python workers')
     ax.plot(x, h, color=BLUE, ls='--', label='JVM heap')
     ax.plot(x, d, color=AQUA, ls=':', label='JVM direct')
 

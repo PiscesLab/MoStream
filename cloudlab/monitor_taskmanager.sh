@@ -46,10 +46,28 @@ except Exception as e:
     fi
 
     # --- Python worker memory (separate processes from JVM) ---
-    PY_MB=$(ps aux | grep -E "python.*beam_sdk_worker|python.*pyflink" \
-        | grep -v grep | awk '{sum+=$6} END {printf "%dMB", sum/1024}')
-    PY_COUNT=$(ps aux | grep -E "python.*beam_sdk_worker|python.*pyflink" \
-        | grep -v grep | wc -l)
+    # Match `beam_boot` ONLY, via the [b] bracket trick so this pipeline does not self-match.
+    #
+    # The old pattern ("python.*beam_sdk_worker|python.*pyflink") also matched the 8
+    # `pyflink-udf-runner.sh` shell WRAPPERS that launch the workers. Each wrapper holds ~3 MB,
+    # so the memory SUM was unaffected, but the COUNT was inflated: it logged 18 where there
+    # were 8 real workers (8 wrappers + 8 workers + 2 orphans from a killed job). That count is
+    # what put "16 Python worker processes" into the paper. The real model is one worker per
+    # task SLOT, not per operator: slot sharing puts a Train + Infer + Rank subtask in one slot,
+    # so at P=8 there are 8 workers of ~2.2 GB each, not 16 of ~1.05 GB.
+    #
+    # Orphans (ppid=1) left by a killed job still match beam_boot and would be counted into a
+    # later run's total, so exclude them: a live worker is parented by its wrapper, never by init.
+    PY_PIDS=$(ps -eo pid,ppid,args --no-headers \
+        | grep 'pyflink.fn_execution.beam.beam_[b]oot' \
+        | awk '$2 != 1 {print $1}')
+    if [ -n "$PY_PIDS" ]; then
+        PY_MB=$(ps -o rss= -p "$(echo "$PY_PIDS" | tr '\n' ',' | sed 's/,$//')" \
+            | awk '{sum+=$1} END {printf "%dMB", sum/1024}')
+        PY_COUNT=$(echo "$PY_PIDS" | wc -l)
+    else
+        PY_MB="0MB"; PY_COUNT=0
+    fi
 
     # --- Training metrics from TM log ---
     # Read the TRAINPROF line that NPMMModel.py actually emits. The old code grepped for
