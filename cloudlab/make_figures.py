@@ -475,8 +475,306 @@ def fig_persistence():
                 f'range {min(yb):.2f}-{max(yb):.2f}')
 
 
+# ---------------------------------------------------------------- E3 scaling sweep
+# Data: results/e3/metrics_p{P}.csv (long format ts,parallelism,vertex,subtask,metric,value
+# from e3_metrics.py) and results/e3/latency_p{P}.csv (from e0_steering_latency.py). Both
+# are produced per arm by cloudlab/e3_run.sh. Every reader here SKIPS cleanly if an arm is
+# absent, so these render whatever subset of {1,2,4,8,16} has been collected.
+E3_PS = (1, 2, 4, 8, 16)
+# Compute stages carry the narrative (Rank is the window_all bottleneck); Source/Sink are
+# just the I/O endpoints of a chained vertex. Prefer the most downstream COMPUTE stage so
+# 'Infer->Rank->Sink' labels as 'Rank', not 'Sink'.
+_VCORE = ('Parse', 'Train', 'Infer', 'Rank')
+_VEND = ('Source', 'Sink')
+
+
+def _short_vertex(name):
+    """Chain names read like 'Train->Infer' / 'Infer->Rank->Sink'; label by the most
+    downstream COMPUTE stage so a bar or point is named by what it IS. The source chain is
+    named 'Source: ... -> LoadJSON, Parse, ...' and contains 'Parse', so it is special-cased
+    first -- otherwise it would label as 'Parse' and read as a compute stage it is not."""
+    if 'Source' in name:
+        return 'Source'
+    core = [k for k in _VCORE if k in name]
+    if core:
+        return core[-1]
+    end = [k for k in _VEND if k in name]
+    return end[-1] if end else name[:14]
+
+
+def _pct(sorted_vals, q):
+    if not sorted_vals:
+        return float('nan')
+    k = (len(sorted_vals) - 1) * q
+    lo, hi = int(k), min(int(k) + 1, len(sorted_vals) - 1)
+    return sorted_vals[lo] + (sorted_vals[hi] - sorted_vals[lo]) * (k - lo)
+
+
+def _read_latency(P):
+    """[latency_ms] for arm P, or None if the arm was not collected."""
+    path = f'results/e3/latency_p{P}.csv'
+    if not os.path.exists(path):
+        return None
+    out = []
+    with open(path) as f:
+        for r in csv.DictReader(f):
+            try:
+                out.append(int(r['latency_ms']))
+            except (ValueError, KeyError):
+                pass
+    return out or None
+
+
+def _load_e3_arm(P):
+    """(per, rate_by_ts) for arm P, or None. `per[metric][vertex] = [values]` over all
+    samples and subtasks; `rate_by_ts[vertex][ts]` = out-rate summed across subtasks at
+    that sample.
+
+    NOTE: rate_by_ts holds the ENGINE'S rate GAUGE and is kept only for diagnostics. Do not
+    use it for throughput -- see _e3_throughput."""
+    path = f'results/e3/metrics_p{P}.csv'
+    if not os.path.exists(path):
+        return None
+    per, rate_by_ts = {}, {}
+    with open(path) as f:
+        for r in csv.DictReader(f):
+            try:
+                v = float(r['value'])
+            except (ValueError, KeyError):
+                continue
+            metric, vx = r.get('metric', ''), r.get('vertex', '')
+            per.setdefault(metric, {}).setdefault(vx, []).append(v)
+            if metric == 'numRecordsOutPerSecond':
+                try:
+                    ts = int(r['ts'])
+                except (ValueError, KeyError):
+                    continue
+                d = rate_by_ts.setdefault(vx, {})
+                d[ts] = d.get(ts, 0.0) + v
+    return (per, rate_by_ts) if per else None
+
+
+def _e3_throughput(P):
+    """{vertex: records/s} and window seconds for arm P, from CUMULATIVE COUNTER DELTAS.
+
+    Throughput is (last numRecordsOut - first numRecordsOut) / elapsed, summed over subtasks.
+    It is NOT the median of numRecordsOutPerSecond: that gauge is a smoothed rate meter, and
+    Infer emits its ~488 candidates for a record in one burst, so the meter swings wildly
+    between samples and its median understates the truth badly -- measured 221/s against an
+    actual 404/s at P=4, an 1.8x error. The counter delta is exact by construction: it counts
+    every record the operator emitted between two instants and divides by the elapsed time.
+
+    e3_metrics only samples AFTER the driver's warm-up, so this delta is the steady-state,
+    fully-warm behaviour. (Reading the last cumulative value instead of the delta measures
+    the job's whole life INCLUDING warm-up, when Infer emits a `model_not_ready` singleton
+    rather than ~488 candidates, and understates the amplification accordingly.)
+    """
+    path = f'results/e3/metrics_p{P}.csv'
+    if not os.path.exists(path):
+        return None, 0.0
+    rows = list(csv.DictReader(open(path)))
+    if not rows:
+        return None, 0.0
+    tss = sorted({int(r['ts']) for r in rows})
+    t0, t1 = tss[0], tss[-1]
+    span = float(t1 - t0)
+    if span <= 0:
+        return None, 0.0
+    first, last = {}, {}
+    for r in rows:
+        if r.get('metric') != 'numRecordsOut':
+            continue
+        k = (r['vertex'], r['subtask'])
+        ts = int(r['ts'])
+        try:
+            v = float(r['value'])
+        except ValueError:
+            continue
+        if ts == t0:
+            first[k] = v
+        if ts == t1:
+            last[k] = v
+    out = {}
+    for k, v in last.items():
+        out[k[0]] = out.get(k[0], 0.0) + (v - first.get(k, 0.0))
+    return {vx: n / span for vx, n in out.items()}, span
+
+
+def fig_scaling():
+    """E3: throughput and steering latency vs operator parallelism.
+
+    Throughput is the dominant operator's output rate -- Infer, the 500x amplifier, whose
+    scored-candidates/s is the compute that parallelism buys. A dashed ideal-linear line
+    from the P=1 point marks perfect scaling, so the eye reads the inflection (where the
+    curve peels away) rather than an absolute number. Latency is the E0 distribution per
+    arm (p50 and p95). Two panels, never a dual axis: the measures have different units.
+    """
+    Ps, thru, p50, p95 = [], [], [], []
+    thru_lbl = None
+    for P in E3_PS:
+        tp, span = _e3_throughput(P)
+        lat = _read_latency(P)
+        if tp is None and lat is None:
+            continue
+        Ps.append(P)
+        if tp:
+            # the amplifier (Infer) dominates the record counts; it is the compute
+            # parallelism actually buys, and its delta-derived rate is exact.
+            best_v = max(tp, key=lambda v: tp[v])
+            thru.append(tp[best_v])
+            thru_lbl = _short_vertex(best_v)
+        else:
+            thru.append(float('nan'))
+        if lat:
+            s = sorted(lat)
+            p50.append(_pct(s, 0.50) / 1000.0)
+            p95.append(_pct(s, 0.95) / 1000.0)
+        else:
+            p50.append(float('nan'))
+            p95.append(float('nan'))
+    if not Ps:
+        print('  [skip] scaling: no results/e3 arms')
+        return
+
+    # Steering latency is only meaningful when the source is LIVE. Under OFFSET=earliest each
+    # arm replays a backlog, so src_ts is days old and `latency = now - src_ts` measures the
+    # BACKLOG'S AGE, not steering delay (measured: p50 ~74.8 h). Throughput scaling REQUIRES
+    # that backlog -- at the live sim rate P=1 is never the bottleneck and the curve is flat --
+    # so one sweep cannot yield both. Drop the panel rather than plot a number that looks like
+    # latency and is not; E0 reports steering latency from a steady-state run.
+    finite = [v for v in p50 if v == v]
+    lat_ok = bool(finite) and max(finite) < 600.0
+    if not lat_ok and finite:
+        print(f'      [latency panel suppressed] p50 up to {max(finite)/3600:.1f} h -- this is '
+              f'backlog age under OFFSET=earliest, not steering latency. Use E0.')
+
+    if lat_ok:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(COL, 2.75), sharex=True)
+    else:
+        fig, ax1 = plt.subplots(figsize=(COL, 1.7))
+        ax2 = None
+    ax1.plot(Ps, thru, color=BLUE, marker='o', ms=4, label=thru_lbl or 'throughput')
+    # ideal-linear reference anchored at the first finite throughput point
+    base = next(((p, t) for p, t in zip(Ps, thru) if t == t and t > 0), None)
+    if base:
+        p0, t0 = base
+        ax1.plot(Ps, [t0 * p / p0 for p in Ps], color=MUTED, ls='--', lw=0.9,
+                 label='ideal linear')
+    ax1.set_ylabel('Scored cand./s')
+    ax1.grid(axis='y'); ax1.set_axisbelow(True)
+    ax1.legend(loc='upper left', handlelength=1.6, labelcolor=INK2, borderpad=0.2)
+
+    if ax2 is not None:
+        ax2.plot(Ps, p50, color=BLUE, marker='o', ms=4, label='p50')
+        ax2.plot(Ps, p95, color=AQUA, marker='s', ms=4, ls='--', label='p95')
+        ax2.set_ylabel('Latency (s)')
+        ax2.grid(axis='y'); ax2.set_axisbelow(True)
+        ax2.legend(loc='upper right', handlelength=1.6, labelcolor=INK2, borderpad=0.2)
+    axb = ax2 if ax2 is not None else ax1
+    axb.set_xlabel('Operator parallelism')
+    axb.set_xscale('log', base=2)
+    axb.set_xticks(Ps); axb.set_xticklabels([str(p) for p in Ps])
+    save(fig, 'fig_scaling')
+    for i, P in enumerate(Ps):
+        lat_s = f'p50={p50[i]:.2f}s' if lat_ok else 'p50=n/a(backlog)'
+        print(f'      P={P:<2} thru={thru[i]:.1f}/s  {lat_s}  (window {_e3_throughput(P)[1]:.0f}s)')
+
+
+def fig_utilisation():
+    """E3: where capacity goes -- busy / backpressured / idle per operator across parallelism.
+
+    A scalar utilisation cannot say WHERE capacity was lost; the state decomposition can
+    (EXPERIMENTS.md E3). We plot EVERY operator, because the cascade is the story: under a
+    saturating source the bottleneck is the operator that is busy and NOT backpressured, and
+    everything upstream of it is backpressured BY it. Measured (P=1): Rank 100% busy / 0%
+    backpressured while Source sits at 99.9% backpressured -- Rank is the constraint. As P
+    rises Rank's busy drains (100 -> 88 -> 72%) and its idle climbs (0 -> 12 -> 28%), which is
+    the per-operator evidence that parallelism relieves it, and hence that the
+    window_all -> window fix (which let Rank scale past 1 sub-task at all) did the work.
+
+    Bottleneck selector is max(busy - backpressure), NOT max(backpressure). Under saturation
+    the SOURCE is pinned at ~100% backpressured in every arm, so ranking by backpressure picks
+    the source every time and says nothing. busy-minus-backpressure scores Rank 100, Infer 4.8,
+    Train -10.6, Source -99.8, which is the operator a Flink practitioner would name.
+    """
+    arms = {}
+    for P in E3_PS:
+        a = _load_e3_arm(P)
+        if a is not None:
+            arms[P] = a
+    if not arms:
+        print('  [skip] utilisation: no results/e3 arms')
+        return
+    Ps = sorted(arms)
+
+    # per arm: {op: (busy, bp, idle)} as fractions summing to 1
+    def _arm_ops(per):
+        ops = {}
+        vxs = set()
+        for m in ('busyTimeMsPerSecond', 'backPressuredTimeMsPerSecond'):
+            vxs |= set(per.get(m, {}).keys())
+        for vx in vxs:
+            def _mean(metric):
+                vals = per.get(metric, {}).get(vx, [])
+                return statistics.mean(vals) / 1000.0 if vals else None
+            b = _mean('busyTimeMsPerSecond') or 0.0
+            p = _mean('backPressuredTimeMsPerSecond') or 0.0
+            i = _mean('idleTimeMsPerSecond')
+            if i is None:
+                i = max(0.0, 1.0 - b - p)
+            tot = b + p + i or 1.0
+            ops[_short_vertex(vx)] = (b / tot, p / tot, i / tot)
+        return ops
+
+    per_arm = {P: _arm_ops(arms[P][0]) for P in Ps}
+    order = [o for o in ('Source', 'Train', 'Infer', 'Rank')
+             if any(o in per_arm[P] for P in Ps)]
+    if not order:
+        print('  [skip] utilisation: no recognised operators')
+        return
+
+    # bottleneck = max(busy - backpressure), at the smallest arm
+    b0 = per_arm[Ps[0]]
+    bottleneck = max(b0, key=lambda o: b0[o][0] - b0[o][1])
+
+    fig, ax = plt.subplots(figsize=(COL, 2.0))
+    nb = len(order)
+    w = 0.8 / nb
+    for gi, P in enumerate(Ps):
+        for oi, op in enumerate(order):
+            if op not in per_arm[P]:
+                continue
+            b, p, i = per_arm[P][op]
+            x = gi + (oi - (nb - 1) / 2.0) * w
+            ax.bar(x, b, width=w * 0.92, color=BLUE)
+            ax.bar(x, p, width=w * 0.92, bottom=b, color=RED, hatch='///')
+            ax.bar(x, i, width=w * 0.92, bottom=b + p, color=MUTED, alpha=0.35)
+            ax.text(x, -0.055, op[0], ha='center', va='top', fontsize=5.4,
+                    color=INK if op == bottleneck else MUTED)
+    ax.set_xticks(range(len(Ps)))
+    ax.set_xticklabels([f'P={p}' for p in Ps])
+    ax.tick_params(axis='x', pad=10)
+    ax.set_ylabel('Time fraction')
+    ax.set_ylim(0, 1.0)
+    ax.set_title(f'bottleneck: {bottleneck} (busy, never backpressured)',
+                 loc='left', color=INK2, pad=4, fontsize=7)
+    from matplotlib.patches import Patch
+    ax.legend(handles=[Patch(facecolor=BLUE, label='busy'),
+                       Patch(facecolor=RED, hatch='///', label='backpressured'),
+                       Patch(facecolor=MUTED, alpha=0.35, label='idle')],
+              loc='upper left', bbox_to_anchor=(0.0, -0.16), ncol=3, handlelength=1.4,
+              labelcolor=INK2, borderpad=0.2, columnspacing=1.0)
+    save(fig, 'fig_utilisation')
+    print(f'      bottleneck (max busy-bp) = {bottleneck}')
+    for P in Ps:
+        cells = '  '.join(f'{o}:{per_arm[P][o][0]:.0%}/{per_arm[P][o][1]:.0%}'
+                          for o in order if o in per_arm[P])
+        print(f'      P={P:<2} (busy/bp)  {cells}')
+
+
 FIGS = {'footprint': fig_footprint, 'memory': fig_memory, 'cost': fig_cost,
-        'restarts': fig_restarts, 'latency': fig_latency, 'persistence': fig_persistence}
+        'restarts': fig_restarts, 'latency': fig_latency, 'persistence': fig_persistence,
+        'scaling': fig_scaling, 'utilisation': fig_utilisation}
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()

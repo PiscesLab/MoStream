@@ -2,7 +2,8 @@ import argparse, logging, sys, json, time, os
 from pathlib import Path
 from pyflink.common import WatermarkStrategy, Encoder, Types, Time, Configuration
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
-from pyflink.datastream.window import CountWindow, CountTumblingWindowAssigner
+from pyflink.datastream.window import (CountWindow, CountTumblingWindowAssigner,
+                                       CountTrigger, PurgingTrigger)
 from pyflink.datastream.connectors.kafka import KafkaSource, KafkaSink, KafkaOffsetsInitializer, KafkaTopicPartition, KafkaRecordSerializationSchema
 from pyflink.datastream.connectors.base import DeliveryGuarantee, SupportsPreprocessing, StreamTransformer
 from pyflink.common.serialization import SimpleStringSchema
@@ -233,7 +234,34 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     # chunk_id is a safe key: a SMILES lives in exactly one chunk (Infer slices the search
     # space by chunk_id), so it always routes to the same sub-task and RankFunction's `searched`
     # de-duplication set stays correct per sub-task. See Ranking.RankFunction's docstring.
+    # The trigger is EXPLICIT because the default retains every record forever.
+    #
+    # CountTumblingWindowAssigner's default trigger is a bare CountTrigger, whose on_element
+    # returns TriggerResult.FIRE -- not FIRE_AND_PURGE. pyflink's own source says so at
+    # datastream/window.py: "the window is not purged though, all elements are retained."
+    # Normally a window's contents are reclaimed by a cleanup timer registered at
+    # window.max_timestamp() + allowed_lateness; but CountWindow.max_timestamp() is
+    # MAX_LONG_VALUE, so that timer never fires. The two together mean the element ListState of
+    # a count window is NEVER cleared: every record that has ever entered Rank stays in keyed
+    # state for the life of the job.
+    #
+    # Measured on the 24.2 h E1 run, which carried this defect: Rank held 346.1 MB of the job's
+    # 392 MB of checkpointed state (Train held 0.0, Infer 45.9) and it was still climbing with no
+    # plateau. Both axes match the mechanism to within measurement noise -- 5,093,880 records
+    # into Rank x ~68 B/record = 346 MB total, and 210,665 rec/h x 68 B = 14.3 MB/h against ~15
+    # MB/h observed -- which is what distinguishes this from a guess. It also inflated every
+    # snapshot: checkpoint duration drifted to p99 14.7 s / max 32.6 s carrying the garbage.
+    #
+    # PurgingTrigger wraps the nested trigger and converts its FIRE into FIRE_AND_PURGE, so the
+    # window's contents are dropped once RankFunction has read them. This is safe here: the
+    # window is TUMBLING, so panes are disjoint and nothing downstream re-reads a fired window.
+    # Rank's cross-window state (the `searched` de-duplication set) is an instance variable, not
+    # window state, and is untouched by purging.
+    #
+    # NOTE: `count_window(10)` is NOT an escape hatch -- it returns
+    # WindowedStream(self, CountTumblingWindowAssigner(size)), i.e. this same non-purging default.
     rank_stream = infer_stream.key_by(lambda x: x[0]).window(CountTumblingWindowAssigner(10)) \
+        .trigger(PurgingTrigger.of(CountTrigger.of(10))) \
         .apply(RankFunction(), output_type=Types.STRING()).name("Infer->Rank")
         #.map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], float(x.split("$")[2]))), output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.DOUBLE()]))
     #rank_stream = infer_stream.window_all(TumblingEventTimeWindows.of(Time.seconds(5))) \
