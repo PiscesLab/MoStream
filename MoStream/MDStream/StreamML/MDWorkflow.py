@@ -195,9 +195,14 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     # constructor so it is serialized with the operator and reaches the TaskManager's Python
     # worker. Setting it via the submission environment does NOT reach the worker.
     _persist_weights = os.environ.get("MOSTREAM_PERSIST_WEIGHTS", "1") == "1"
-    print(f"[MDWorkflow] persist_weights={_persist_weights}")
+    # E5 train-once arm: freeze the surrogate after its first gradient step. Resolved HERE for
+    # the same reason as persist_weights -- the env var exists on the client but not in the
+    # TaskManager's Beam worker, so it must travel as a constructor argument.
+    _train_once = os.environ.get("MOSTREAM_TRAIN_ONCE", "0") == "1"
+    print(f"[MDWorkflow] persist_weights={_persist_weights} train_once={_train_once}")
     train_stream = extracted_stream.key_by(lambda x: x[2]) \
-        .process(TrainFunction(persist_weights=_persist_weights), output_type=Types.STRING()) \
+        .process(TrainFunction(persist_weights=_persist_weights, train_once=_train_once),
+                 output_type=Types.STRING()) \
         .map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], int(x.split("$")[2]), x.split("$")[3], int(x.split("$")[4]))),
              output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.INT(), Types.STRING(), Types.LONG()])).name("Parse->Train")
     # input  tuple (smiles, IP, model_id, src_ts)

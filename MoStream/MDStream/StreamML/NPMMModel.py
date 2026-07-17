@@ -21,7 +21,7 @@ def _bucket_size(n):
 
 class TrainFunction(KeyedProcessFunction):
 
-    def __init__(self, persist_weights=True):
+    def __init__(self, persist_weights=True, train_once=False):
         #print("reach_init")
         self.state = None
         self.num_epochs = 1
@@ -38,7 +38,21 @@ class TrainFunction(KeyedProcessFunction):
         # constructor argument is serialized WITH the operator and therefore does travel. The
         # value is resolved client-side in MDWorkflow from MOSTREAM_PERSIST_WEIGHTS.
         self._persist = bool(persist_weights)
-        print(f"finished init (persist_weights={self._persist})")
+        # E5 train-once arm. When True the surrogate takes exactly ONE gradient step, on the
+        # first full window it sees, and is frozen thereafter: every later record re-emits the
+        # weights from that single fit. This is the baseline that separates "a surrogate helps"
+        # from "updating the surrogate ONLINE helps", which is the claim the streaming loop
+        # actually makes. Without it, MoStream vs Random cannot distinguish the two, because a
+        # frozen model trained on 16 molecules already beats uniform sampling.
+        #
+        # Only `fit` is skipped. The window still slides, weights are still emitted downstream,
+        # Infer still scores its chunk, and Rank still ranks, so the arms differ in exactly one
+        # factor: whether the gradient step happens. Passed via the constructor rather than read
+        # from os.environ, for the same reason as persist_weights -- env vars set at submission
+        # do not reach the Beam worker.
+        self._train_once = bool(train_once)
+        self._fitted = False        # set once the single fit has happened (train-once arm only)
+        print(f"finished init (persist_weights={self._persist}, train_once={self._train_once})")
 
     def open(self, runtime_context: RuntimeContext):
         import h5py as _h5py
@@ -187,20 +201,37 @@ class TrainFunction(KeyedProcessFunction):
         # --- cloudlab/parse_train_profile.py.
         import time as _t
         _t0 = _t.perf_counter()
-        history = self._model.fit(
-            train_loader,
-            epochs=self.num_epochs,
-            shuffle=False,
-            verbose=False,
-            steps_per_epoch=len(train_X),
-            validation_data=valid_loader,
-            validation_steps=valid_steps,
-            validation_freq=1
-        )
+        if self._train_once and self._fitted:
+            # E5 train-once arm, after the single fit: skip the gradient step and re-emit the
+            # frozen weights. Everything downstream is unchanged, so the arms differ only in
+            # whether the model keeps learning from the stream.
+            history = None
+        else:
+            history = self._model.fit(
+                train_loader,
+                epochs=self.num_epochs,
+                shuffle=False,
+                verbose=False,
+                steps_per_epoch=len(train_X),
+                validation_data=valid_loader,
+                validation_steps=valid_steps,
+                validation_freq=1
+            )
+            if self._train_once and not self._fitted:
+                self._fitted = True
+                print("[TrainFunction] MOSTREAM_TRAIN_ONCE=1: model FROZEN after this fit "
+                      "(E5 train-once arm)")
         _t_fit = _t.perf_counter() - _t0
 
-        train_loss = history.history['loss']
-        train_mae = history.history['mean_absolute_error']
+        # A frozen arm has no fresh history; report the last fit's metrics so the profile line
+        # stays parseable and the arms produce identically-shaped logs.
+        if history is not None:
+            train_loss = history.history['loss']
+            train_mae = history.history['mean_absolute_error']
+            self._last_loss, self._last_mae = train_loss, train_mae
+        else:
+            train_loss = getattr(self, '_last_loss', [float('nan')])
+            train_mae = getattr(self, '_last_mae', [float('nan')])
 
         # get_weights() -> nested Python lists. This is where the model becomes data.
         _t0 = _t.perf_counter()
