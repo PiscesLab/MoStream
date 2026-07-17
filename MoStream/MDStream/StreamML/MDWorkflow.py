@@ -199,9 +199,15 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     # the same reason as persist_weights -- the env var exists on the client but not in the
     # TaskManager's Beam worker, so it must travel as a constructor argument.
     _train_once = os.environ.get("MOSTREAM_TRAIN_ONCE", "0") == "1"
-    print(f"[MDWorkflow] persist_weights={_persist_weights} train_once={_train_once}")
+    # E5 sweep: size of Train's sliding window, i.e. how many molecules the surrogate learns
+    # from. Separate from the SGD minibatch. Unset keeps the historical window of 16, which
+    # measurably cannot generalize (0 hits in 1164 recommendations against a 14.1% base rate).
+    _window = os.environ.get("MOSTREAM_WINDOW")
+    print(f"[MDWorkflow] persist_weights={_persist_weights} train_once={_train_once} "
+          f"window={_window or 'default(16)'}")
     train_stream = extracted_stream.key_by(lambda x: x[2]) \
-        .process(TrainFunction(persist_weights=_persist_weights, train_once=_train_once),
+        .process(TrainFunction(persist_weights=_persist_weights, train_once=_train_once,
+                               window_size=int(_window) if _window else None),
                  output_type=Types.STRING()) \
         .map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], int(x.split("$")[2]), x.split("$")[3], int(x.split("$")[4]))),
              output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.INT(), Types.STRING(), Types.LONG()])).name("Parse->Train")

@@ -21,7 +21,7 @@ def _bucket_size(n):
 
 class TrainFunction(KeyedProcessFunction):
 
-    def __init__(self, persist_weights=True, train_once=False):
+    def __init__(self, persist_weights=True, train_once=False, window_size=None):
         #print("reach_init")
         self.state = None
         self.num_epochs = 1
@@ -52,7 +52,27 @@ class TrainFunction(KeyedProcessFunction):
         # do not reach the Beam worker.
         self._train_once = bool(train_once)
         self._fitted = False        # set once the single fit has happened (train-once arm only)
-        print(f"finished init (persist_weights={self._persist}, train_once={self._train_once})")
+
+        # TRAINING WINDOW SIZE, separated from the SGD minibatch (E5 sweep).
+        #
+        # `batch_size` used to mean three things at once: the sliding window's cap, the
+        # not-ready threshold, and the minibatch handed to fit(). Only the first two are about
+        # HOW MUCH DATA the surrogate learns from; the third is an optimizer detail. Conflating
+        # them meant the surrogate could only ever see 16 molecules, which is why it memorises
+        # that window (train MAE 0.22 V) and emits a ~constant for the other 1.1M candidates
+        # (est_ip spread 0.20 V over 1164 recommendations, 0 hits against a 14.1% base rate).
+        #
+        # Separating them lets us measure the real trade-off. The window is NOT bounded by state
+        # (512 SMILES+IP strings is ~36 KB, nothing); it is bounded by TIME. steps_per_epoch is
+        # len(train_X)//minibatch, so a window N times larger costs N times more gradient steps
+        # per record, and the per-record cost is precisely the steering latency this paper sells.
+        # Surrogate quality and steering latency therefore trade off directly, and that curve is
+        # the experiment.
+        #
+        # Default None keeps the historical behaviour exactly (window == batch_size == 16).
+        self.window_size = int(window_size) if window_size else self.batch_size
+        print(f"finished init (persist_weights={self._persist}, train_once={self._train_once}, "
+              f"window_size={self.window_size}, minibatch={self.batch_size})")
 
     def open(self, runtime_context: RuntimeContext):
         import h5py as _h5py
@@ -129,9 +149,10 @@ class TrainFunction(KeyedProcessFunction):
         src_ts = int(new_tuple[3]) if len(new_tuple) > 3 else 0
         #print("model_id", model_id)
 
+        # Sliding window capped at window_size (NOT batch_size, which is now only the minibatch).
         if (current_dataset is None):
             current_dataset = [str(new_x) + "," + str(new_y) + "," + str(model_id)]
-        elif (len(current_dataset) < self.batch_size):
+        elif (len(current_dataset) < self.window_size):
              current_dataset.append(str(new_x) + "," + str(new_y) + str(model_id))
         else:
              current_dataset.pop(0)
@@ -168,7 +189,10 @@ class TrainFunction(KeyedProcessFunction):
         valid_y = y[~train_split]
         print("train_y: ", train_y)
 
-        if (len(current_dataset) < self.batch_size):
+        # Not-ready gate: the window must be full before the surrogate is worth serving. Scales
+        # with window_size, so a larger window also costs a longer warm-up (512 records at the
+        # seed rate of ~0.12 rec/s is ~71 min before the first real recommendation).
+        if (len(current_dataset) < self.window_size):
            result = [str(model_id) + "$"+ "haaah" + "$" + str(model_id) + "$" + "haaah" + "$" + str(src_ts)]
            #print("result_list", result)
            return result
