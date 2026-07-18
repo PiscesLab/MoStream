@@ -46,28 +46,28 @@ def main():
     t, mb, ev = load(args.csv)
     tm = t / 60.0; gb = mb / 1024.0
     recycles = [t[i]/60.0 for i, e in enumerate(ev) if e and 'recycle' in e]
-    peak = gb.max()
+    peak = gb.max(); plateau = 17.0
 
     fig, ax = plt.subplots(figsize=(COL, 1.95))
-    # unbounded envelope: baseline + leak growth from the run start (what recycling avoids)
-    base = float(np.min(gb[:3])) if len(gb) >= 3 else float(gb[0])
-    ax.plot(tm, base + args.leak_gbph * (tm / 60.0) + (peak - base), '--', color=RED, lw=1.1,
-            alpha=0.8, label='unbounded (no recycle)')
-    ax.plot(tm, gb, '-', color=BLUE, lw=1.4, label='recycled (measured)')
+    # un-recycled reference: the 17 GB plateau of fig:footprint, then +0.81 GB/h (unbounded)
+    ax.plot(tm, plateau + args.leak_gbph * (tm / 60.0), '--', color=RED, lw=1.2, alpha=0.85,
+            label='un-recycled (Fig. 2): $+0.81$ GB/h')
+    ax.plot(tm, gb, '-', color=BLUE, lw=1.5, label='recycled (measured)')
     for rc in recycles:
         ax.axvline(rc, color=MUTED, lw=0.7, ls=':')
     if recycles:
-        ax.text(recycles[0], peak*1.02, 'recycle', color=INK2, fontsize=6.2, ha='center', va='bottom')
+        ax.annotate('recycle', xy=(recycles[0], peak), xytext=(recycles[0]+0.6, peak+2.2),
+                    fontsize=6.3, color=INK2, arrowprops=dict(arrowstyle='->', color=INK2, lw=0.7))
     ax.axhline(args.process_size_gb, color=INK2, lw=0.9, ls='-.')
-    ax.text(tm.max(), args.process_size_gb, "engine \\texttt{process.size} ", color=INK2,
-            fontsize=6.0, ha='right', va='bottom')
+    ax.text(tm.max(), args.process_size_gb-0.3, "engine process.size", color=INK2,
+            fontsize=6.0, ha='right', va='top', style='italic')
     ax.set_xlabel('time (min)'); ax.set_ylabel('Python-worker memory (GB)')
-    ax.set_xlim(0, tm.max()); ax.set_ylim(0, max(peak, args.process_size_gb) * 1.18)
-    ax.legend(loc='upper left', handlelength=1.7)
+    ax.set_xlim(0, tm.max()); ax.set_ylim(0, plateau * 1.28)
+    ax.legend(loc='lower right', handlelength=1.7)
     os.makedirs(OUT, exist_ok=True)
     for extn in ('pdf', 'png'):
         fig.savefig(f'{OUT}/{args.name}.{extn}')
-    print(f'  wrote {OUT}/{args.name}.pdf  (peak={peak:.1f} GB, {len(recycles)} recycles, base={base:.1f} GB)')
+    print(f'  wrote {OUT}/{args.name}.pdf  (peak={peak:.1f} GB, {len(recycles)} recycles, min={gb.min():.1f} GB)')
 
 
 if __name__ == "__main__":
