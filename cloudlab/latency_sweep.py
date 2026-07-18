@@ -97,7 +97,8 @@ def main():
     ap.add_argument("--intervals", required=True, help="comma list of seconds/record, e.g. 20,10,6.7,5")
     ap.add_argument("--warmup", type=float, default=90.0, help="fast warm-up seconds (interval 2s)")
     ap.add_argument("--settle", type=float, default=120.0, help="skip this many s at the start of each phase")
-    ap.add_argument("--window", type=float, default=240.0, help="measurement seconds per phase (after settle)")
+    ap.add_argument("--window", type=float, default=240.0, help="measurement seconds per rep (after settle)")
+    ap.add_argument("--reps", type=int, default=1, help="measurement windows per load point (for error bars)")
     ap.add_argument("--out", default="results/latsweep")
     args = ap.parse_args()
 
@@ -136,15 +137,14 @@ def main():
     for s in args.intervals.split(","):
         interval = float(s)
         lam = 1.0 / interval
-        dur = args.settle + args.window
-        t0 = time.time()
-        print(f"[sweep] phase interval={interval}s lambda={lam:.3f}/s for {dur:.0f}s", flush=True)
-        produce(interval, dur, f"lam{lam:.3f}")
-        t1 = time.time()
-        # measurement region excludes the settle prefix
-        phases.append({"interval": interval, "lambda": lam,
-                       "t_start_ms": int((t0 + args.settle) * 1000),
-                       "t_end_ms": int(t1 * 1000)})
+        print(f"[sweep] load lambda={lam:.3f}/s: settle {args.settle:.0f}s + {args.reps}x{args.window:.0f}s", flush=True)
+        produce(interval, args.settle, f"lam{lam:.3f}-settle")   # drain to steady state, not measured
+        for rep in range(args.reps):
+            ta = time.time()
+            produce(interval, args.window, f"lam{lam:.3f}-rep{rep}")
+            tb = time.time()
+            phases.append({"interval": interval, "lambda": lam, "rep": rep,
+                           "t_start_ms": int(ta * 1000), "t_end_ms": int(tb * 1000)})
 
     time.sleep(5)
     cons.stop = True
@@ -169,16 +169,36 @@ def main():
     summary = []
     for p in phases:
         lat = [l for (e, s, l) in rows if p["t_start_ms"] <= e <= p["t_end_ms"]]
-        rec = {"interval": p["interval"], "lambda": round(p["lambda"], 4), "n": len(lat)}
+        rec = {"interval": p["interval"], "lambda": round(p["lambda"], 4),
+               "rep": p["rep"], "n": len(lat)}
         if lat:
             rec.update({"median_ms": pct(lat, 0.5), "p95_ms": pct(lat, 0.95),
                         "mean_ms": sum(lat)/len(lat), "min_ms": min(lat), "max_ms": max(lat)})
         summary.append(rec)
-        print(f"[sweep] lambda={p['lambda']:.3f}  n={len(lat)}  "
-              f"median={rec.get('median_ms')}ms  p95={rec.get('p95_ms')}ms", flush=True)
+
+    # aggregate across reps per load point -> mean-of-medians +/- std (error bars)
+    def mean(xs): return sum(xs)/len(xs) if xs else None
+    def std(xs):
+        if len(xs) < 2: return 0.0
+        m = mean(xs); return (sum((x-m)**2 for x in xs)/(len(xs)-1))**0.5
+    byload = {}
+    for r in summary:
+        byload.setdefault(r["interval"], []).append(r)
+    aggregated = []
+    for interval, reps in sorted(byload.items(), key=lambda kv: -kv[0]):
+        meds = [r["median_ms"] for r in reps if r.get("median_ms") is not None]
+        p95s = [r["p95_ms"] for r in reps if r.get("p95_ms") is not None]
+        a = {"interval": interval, "lambda": round(1.0/interval, 4), "n_reps": len(meds),
+             "n_total": sum(r["n"] for r in reps)}
+        if meds:
+            a.update({"median_mean_ms": mean(meds), "median_std_ms": std(meds),
+                      "median_reps_ms": meds, "p95_mean_ms": mean(p95s)})
+        aggregated.append(a)
+        print(f"[sweep] lambda={a['lambda']:.3f}  reps={len(meds)}  "
+              f"median={a.get('median_mean_ms')}+/-{a.get('median_std_ms')}ms", flush=True)
 
     with open(os.path.join(args.out, "summary.json"), "w") as f:
-        json.dump({"phases": summary, "total_recs": len(rows)}, f, indent=2)
+        json.dump({"phases": summary, "aggregated": aggregated, "total_recs": len(rows)}, f, indent=2)
     print(f"[sweep] wrote {args.out}/recs.csv and summary.json ({len(rows)} recs)", flush=True)
 
 
