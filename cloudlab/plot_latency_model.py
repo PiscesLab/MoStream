@@ -56,26 +56,39 @@ def main():
         print(f"  lambda={a['lambda']:.3f} median={a['median_mean_ms']/1000:.2f}+/-{a['median_std_ms']/1000:.2f}s "
               f"(reps={a['n_reps']}, n={a['n_total']})")
 
-    fig, ax = plt.subplots(figsize=(COL, 1.95))
+    fig, ax = plt.subplots(figsize=(COL, 2.15))
+    xmax = args.mu * 1.10
+    ymax = max(p95.max(), 13) * 1.18
+
+    # the band the typical latency never leaves -- makes "flat" readable at a glance
+    ax.axhspan(7, 10, color=BLUE, alpha=0.07, lw=0, zorder=0)
+    ax.text(xmax * 0.012, 8.5, 'typical stays\n7-10 s', fontsize=6.0, color=BLUE,
+            ha='left', va='center', linespacing=1.15, zorder=5)
+
+    # past the service rate the loop cannot keep up: shade it rather than draw a bare line
+    ax.axvspan(args.mu, xmax, color=RED, alpha=0.09, lw=0, zorder=0)
+    ax.axvline(args.mu, color=RED, ls=':', lw=1.1, zorder=2)
+    ax.text(args.mu, ymax * 0.99, ' cannot\n keep up', color=RED, fontsize=6.0,
+            va='top', ha='left', linespacing=1.15, zorder=5)
+
     # smooth (deterministic) reference
     if os.path.exists(args.det):
         dl, dm = det_series(args.det)
-        ax.plot(dl, dm, '-s', color=MUTED, ms=3.2, lw=1.0, alpha=0.9, label='smooth load: median')
+        ax.plot(dl, dm, '-s', color=MUTED, ms=3.2, lw=1.0, alpha=0.9,
+                label='steady arrivals: typical', zorder=3)
     # bursty (Poisson), hardened with error bars
-    ax.plot(lam, p95, '--', color=BLUE, lw=1.0, alpha=0.7, label='bursty load: p95')
-    ax.errorbar(lam, med, yerr=err, fmt='-o', color=BLUE, ms=4.5, lw=1.4, capsize=2.6,
-                elinewidth=1.0, mec='white', mew=0.6, label='bursty load: median $\\pm$ s.d.')
-    # saturation boundary
-    ax.axvline(args.mu, color=RED, ls=':', lw=1.1)
-    ax.text(args.mu, ax.get_ylim()[1]*0.98, r' $\lambda=\mu$', color=RED, fontsize=6.6, va='top', ha='left')
-    ax.annotate('oracle-bound\noperating point', xy=(args.oracle_lambda, 8.0),
-                xytext=(args.oracle_lambda + 0.008, 13.0), fontsize=6.2, color=INK2,
-                arrowprops=dict(arrowstyle='->', color=INK2, lw=0.8))
-    ax.set_xlabel(r'offered load $\lambda$ (rec/s)')
+    ax.plot(lam, p95, '--', color=BLUE, lw=1.0, alpha=0.65,
+            label='bursty arrivals: slowest 5%', zorder=3)
+    ax.errorbar(lam, med, yerr=err, fmt='-o', color=BLUE, ms=4.5, lw=1.6, capsize=2.6,
+                elinewidth=1.0, mec='white', mew=0.6,
+                label='bursty arrivals: typical', zorder=4)
+
+    ax.set_xlabel(r'molecules fed in per second ($\lambda$)')
     ax.set_ylabel('steering latency (s)')
-    ax.set_xlim(0, args.mu * 1.06)
-    ax.set_ylim(0, max(p95.max(), 13) * 1.1)
-    ax.legend(loc='lower left', handlelength=1.7)
+    ax.set_xlim(0, xmax)
+    ax.set_ylim(0, ymax)
+    ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.0), ncol=2,
+              handlelength=1.6, columnspacing=1.0, borderaxespad=0.2, fontsize=6.3)
     os.makedirs(OUT, exist_ok=True)
     for ext in ('pdf', 'png'):
         fig.savefig(f'{OUT}/{args.name}.{ext}')

@@ -762,8 +762,7 @@ def fig_utilisation():
     ax.tick_params(axis='x', pad=10)
     ax.set_ylabel('Time fraction')
     ax.set_ylim(0, 1.0)
-    ax.set_title(f'bottleneck: {bottleneck} (busy, never backpressured)',
-                 loc='left', color=INK2, pad=4, fontsize=7)
+    # bottleneck title removed to keep the panel uncluttered; the caption carries this point
     from matplotlib.patches import Patch
     ax.legend(handles=[Patch(facecolor=BLUE, label='busy'),
                        Patch(facecolor=RED, hatch='///', label='backpressured'),

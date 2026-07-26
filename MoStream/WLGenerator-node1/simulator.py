@@ -163,15 +163,24 @@ if __name__ == "__main__":
         real_oracle = os.environ.get('MOSTREAM_REAL_ORACLE', '1') == '1'
         print(f"[simulator] real_oracle={real_oracle}  n_keys={n_keys}")
 
+        _bad = ('search_space_empty', 'model_not_ready', 'mol_dicts_empty', 'inference_error')
         while len(unsearched_mol) > 0:
-              # Try to get a recommended smiles from Flink
+              # ALWAYS ACT ON THE FRESHEST RECOMMENDATION. A recommendation now costs a ~100 s
+              # oracle call, and Rank emits ~80 recommendations/s, so ~8000 pile up in `Recommend`
+              # during one call. If we consumed that buffer FIFO -- taking the first message and
+              # breaking -- every pick would be one full oracle-call staler than the last, and the
+              # simulator would fall progressively behind, acting on minutes-old rankings while the
+              # live model has moved on. (Observed: sims scoring est_ip=13.55 molecules while the
+              # running job was already emitting est_ip=12.8-13.0.) So we jump to the live tail and
+              # take the LAST valid message, discarding the backlog the oracle's own latency built
+              # up. This is the simulator-side analogue of the steering-latency argument itself:
+              # under a slow consumer, only the newest recommendation is worth acting on.
+              recommend_consumer.seek_to_end()
               smiles_train, ip_train, est_ip = None, None, None
-              for msg in recommend_consumer:
-                    smiles_train, est_ip = parse_recommend_msg(msg.value)
-                    _bad = ('search_space_empty', 'model_not_ready', 'mol_dicts_empty', 'inference_error')
-                    if smiles_train and not any(p in smiles_train for p in _bad):
-                          break
-                    smiles_train = None
+              for msg in recommend_consumer:          # messages arriving in the next 500 ms
+                    s, e = parse_recommend_msg(msg.value)
+                    if s and not any(p in s for p in _bad):
+                          smiles_train, est_ip = s, e   # keep overwriting -> last valid == freshest
 
               if smiles_train and real_oracle:
                     # A recommendation is a molecule from the 1.1M search space, which carries no
