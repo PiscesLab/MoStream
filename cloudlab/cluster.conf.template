@@ -1,0 +1,7 @@
+# Copy this to cluster.conf and fill in the IPs for your CloudLab experiment.
+# cluster.conf is gitignored — update it whenever nodes are replaced.
+
+KAFKA_HOST=""        # apt051 public IP
+JM_HOST=""           # apt041 public IP (Flink JobManager)
+TM_HOST=""           # apt063 public IP (Flink TaskManager)
+SIMULATOR_HOST=""    # apt055 public IP (WLGenerator)

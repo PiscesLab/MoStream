@@ -1,33 +1,45 @@
-import nfp, json
-import tensorflow as tf
+import json
 import numpy as np
 import pickle as pkl
-import redis, random, time, math
+import random, time, math
+import traceback
 
 from pyflink.datastream.functions import KeyedProcessFunction, RuntimeContext
 from pyflink.datastream.state import ValueStateDescriptor
 from pyflink.common.typeinfo import Types
-from tensorflow.python.keras import callbacks as cb
 from typing import List, Any, Optional, Tuple, Dict, Union
-from moldesign.utils.conversions import convert_string_to_dict
-from moldesign.utils.callbacks import LRLogger, EpochTimeLogger, TimeLimitCallback
-from moldesign.score.nfp import make_data_loader, ReduceAtoms
-import traceback
 
 def sigmod(x):
     return 1 / (1 + math.exp(-x))
 
+
+# Molecule padding is quantized to this many atoms. Every distinct padded size produces a
+# distinct input SHAPE, and every distinct shape makes TensorFlow retrace its graph and
+# retain a new ConcreteFunction forever. Bucketing bounds the number of shapes, and hence
+# the number of retained graphs, at (max molecule size / BUCKET) rather than at the number
+# of records processed. See the call sites for the measured cost of not doing this.
+_ATOM_BUCKET = 16
+
+
+def _bucket_size(n):
+    """Round a molecule size up to the next multiple of _ATOM_BUCKET."""
+    return int(((int(n) + _ATOM_BUCKET - 1) // _ATOM_BUCKET) * _ATOM_BUCKET)
+
 def _default_search_space_path():
     import os
-    # Allow overriding via environment variable for different deployments
+    # 1. Explicit override via env var
     env_path = os.environ.get('KAFKA_SEARCH_SPACE_PATH')
-    if env_path:
+    if env_path and os.path.exists(env_path):
         return env_path
-    # Otherwise resolve relative to this file's repo location
+    # 2. Relative to this file (works when distributed via add_python_file)
     base_dir = os.path.dirname(__file__)
-    candidate = os.path.join(base_dir, '..', 'search_space', 'MOS-search-simple.txt')
-    candidate = os.path.normpath(candidate)
-    return candidate
+    candidate = os.path.normpath(os.path.join(base_dir, '..', 'search_space', 'MOS-search-simple.txt'))
+    if os.path.exists(candidate):
+        return candidate
+    # 3. Fixed path in home directory (works on any CloudLab node after git clone)
+    home_candidate = os.path.expanduser(
+        '~/MoStream/MoStream/MDStream/StreamML/search_space/MOS-search-simple.txt')
+    return home_candidate
 
 
 def load_search_space_all():
@@ -64,13 +76,34 @@ class InferFunction(KeyedProcessFunction):
         #self.search_space = load_search_space_all()
         self.state = None
         self.chunk_id_list = []
-        #self.model_paras = None
+        # The Keras model, built ONCE and reused. See open() for why this matters.
+        self._model = None
         print("infer finished init")
 
     def open(self, runtime_context: RuntimeContext):
         print("infer reach open")
         self.state = runtime_context.get_state(ValueStateDescriptor('search_space', Types.LIST(Types.STRING())))
-        #self.state = runtime_context.get_state(ValueStateDescriptor('search_space', Types.STRING()))
+
+        # self._model is built lazily on the first record, because the architecture arrives
+        # in the record (Train ships it alongside the weights) rather than being available
+        # here. It is then REUSED for the life of the operator, and only its weights are
+        # replaced per record.
+        #
+        # It used to be rebuilt with model_from_json() on EVERY record. That single line was
+        # responsible for two separate symptoms:
+        #
+        #   1. Cost. Rebuilding the architecture took a median of 2.69s per record -- more
+        #      than half of Infer's 8.0s path, and the largest single entry in the per-record
+        #      cost profile. The architecture is identical on every record.
+        #
+        #   2. A memory leak. Each model_from_json() creates a fresh Keras model and
+        #      TensorFlow retains state for it. The Beam Python worker processes grew from
+        #      1.8 GB to 20.7 GB over 5.5 hours (+2.2 GB/h) with no asymptote. Because the
+        #      workers are separate OS processes, no Flink budget bounds them and no Flink
+        #      metric reports them; the run survived only because the node has 62 GB.
+        #
+        # TrainFunction has always built its model once in open(). InferFunction did not.
+        self._model = None
         print("infer finished open")
   
     def process_element(self, new_tuple, ctx: 'KeyedProcessFunction.Context') -> List:
@@ -81,6 +114,8 @@ class InferFunction(KeyedProcessFunction):
         model_id = new_tuple[2]
         #infra_json_str = None
         infra_json_str = new_tuple[3]
+        # E0: pass the originating record's producer timestamp through untouched.
+        src_ts = int(new_tuple[4]) if len(new_tuple) > 4 else 0
         if chunk_id not in self.chunk_id_list:
            self.chunk_id_list.append(chunk_id)
         print("infer chunk_id: ", chunk_id, "chunk_id_list: ", len(self.chunk_id_list))
@@ -94,7 +129,7 @@ class InferFunction(KeyedProcessFunction):
         # Defensive: if the search space is empty, return a safe placeholder result
         if not tmp_search_space:
             print(f"Warning: empty search space for chunk {chunk_id}; returning placeholder result")
-            return [str(chunk_id) + "$" + "search_space_empty" + "$" + str(0)]
+            return [str(chunk_id) + "$" + "search_space_empty" + "$" + str(0) + "$" + str(src_ts)]
         #if (chunk_id != 2231):
         #   tmp_search_space = self.search_space[chunk_id*500:(chunk_id+1)*500]
         #else:
@@ -102,37 +137,78 @@ class InferFunction(KeyedProcessFunction):
         #print("infer weights: ", weights)
  
         if (weights_json_str is None):
-            result = [str(chunk_id) + "$" + "model_not_ready weights_none" + "$" + str(0)]
+            result = [str(chunk_id) + "$" + "model_not_ready weights_none" + "$" + str(0) + "$" + str(src_ts)]
             return result
 
         if ("haaah" in weights_json_str):
-            result = [str(chunk_id) + "$" + "model_not_ready" + "$" + str(0)]
+            result = [str(chunk_id) + "$" + "model_not_ready" + "$" + str(0) + "$" + str(src_ts)]
             return result
         
         #self.model_paras = weights
         #self.state.update(weights)
+        import tensorflow as tf
+        import nfp
+        from moldesign.utils.conversions import convert_string_to_dict
+        from moldesign.score.nfp import make_data_loader, ReduceAtoms
         custom_objects = nfp.custom_objects.copy()
         custom_objects['ReduceAtoms'] = ReduceAtoms
-        
-        # Perform inference inside a try/except so we can log tracebacks and return safely
+        if hasattr(nfp, 'GlobalUpdate'):  custom_objects['GlobalUpdate']  = nfp.GlobalUpdate
+        if hasattr(nfp, 'EdgeUpdate'):    custom_objects['EdgeUpdate']    = nfp.EdgeUpdate
+        if hasattr(nfp, 'NodeUpdate'):    custom_objects['NodeUpdate']    = nfp.NodeUpdate
+        if hasattr(nfp, 'ConcatDense'):   custom_objects['ConcatDense']   = nfp.ConcatDense
+
+        # --- PROFILING: the Infer half of the per-record model-transfer cost. Infer must
+        # --- rebuild the model architecture, parse the ~13.6 MB weight payload, and
+        # --- reinstate it ON EVERY RECORD before it scores a single molecule. These timers
+        # --- separate that fixed transfer cost from the actual scoring work, which is what
+        # --- tells us whether the bottleneck is compute (a faster machine would help) or
+        # --- data movement (only an architectural change would).
+        import time as _t
         try:
-            # Load mpnn model
-            model = tf.keras.models.model_from_json(infra_json_str, custom_objects=custom_objects)
+            # Build the architecture ONCE, then reuse it. Rebuilding it per record cost
+            # 2.69s and leaked ~2.2 GB/hour into the Python worker (see open()).
+            _t0 = _t.perf_counter()
+            if self._model is None:
+                self._model = tf.keras.models.model_from_json(
+                    infra_json_str, custom_objects=custom_objects)
+                print("[InferFunction] model built once; reusing for the life of the operator")
+            model = self._model
+            _t_build = _t.perf_counter() - _t0
+
+            _t0 = _t.perf_counter()
             weights_list = json.loads(weights_json_str)
             weights = [np.array(arr) for arr in weights_list]
-            #model = tf.keras.models.load_model("/mnt/media/MDStream/StreamML/networks/model-local.h5", custom_objects=custom_objects, compile=True)
+            _t_loads = _t.perf_counter() - _t0
+            _payload_mb = len(weights_json_str) / 1048576.0
+
+            # Only the WEIGHTS change per record. This is the whole per-record model update.
+            _t0 = _t.perf_counter()
             model.set_weights(weights)
-            print("infer model loading finished")
+            _t_setw = _t.perf_counter() - _t0
 
             # prepare inference args and loader
+            _t0 = _t.perf_counter()
             x_tmp = []
             for smiles_search in tmp_search_space:
                 x_tmp.append(convert_string_to_dict(smiles_search))
             mol_dicts = np.array(x_tmp)
             if mol_dicts.size == 0:
                 print(f"Warning: mol_dicts empty after conversion for chunk {chunk_id}")
-                return [str(chunk_id) + "$" + "mol_dicts_empty" + "$" + str(0)]
-            max_size = max(len(x['atom']) for x in mol_dicts)
+                return [str(chunk_id) + "$" + "mol_dicts_empty" + "$" + str(0) + "$" + str(src_ts)]
+            # Quantize the padded molecule size to a bucket.
+            #
+            # make_data_loader pads every molecule to max_size, so max_size determines the
+            # SHAPE of the tensor handed to model.predict(). Taking the exact per-chunk
+            # maximum means the shape changes on almost every record, and TensorFlow responds
+            # by RETRACING predict_function and retaining a new ConcreteFunction each time.
+            # It never releases them. Measured: 256 retracing warnings and Python worker RSS
+            # climbing at +15 GB/hour, which no Flink budget bounds because the workers are
+            # separate OS processes.
+            #
+            # Rounding up to a multiple of BUCKET collapses hundreds of distinct shapes into a
+            # handful, so TensorFlow traces a few graphs and then stops. The cost is a little
+            # extra padding; the alternative is unbounded graph retention.
+            max_size = _bucket_size(max(len(x['atom']) for x in mol_dicts))
             batch_size = len(mol_dicts)
 
             loader = make_data_loader(
@@ -141,53 +217,31 @@ class InferFunction(KeyedProcessFunction):
                 repeat=False,
                 max_size=max_size,
             )
+            _t_prep = _t.perf_counter() - _t0
 
-            # predicted IP
+            # predicted IP — the single predict() for this chunk. Inference over the whole
+            # chunk dominates the loop's steering latency, so it must not be repeated.
+            _t0 = _t.perf_counter()
             pred_y = np.squeeze(model.predict(loader))
+            _t_predict = _t.perf_counter() - _t0
+
+            _t_transfer = _t_build + _t_loads + _t_setw   # cost of RECEIVING the model
+            _t_work    = _t_prep + _t_predict             # cost of actually SCORING
+            print(f"INFERPROF chunk={chunk_id} n_mols={len(tmp_search_space)} "
+                  f"build={_t_build:.3f} loads={_t_loads:.3f} setw={_t_setw:.3f} "
+                  f"prep={_t_prep:.3f} predict={_t_predict:.3f} "
+                  f"transfer={_t_transfer:.3f} work={_t_work:.3f} "
+                  f"payload_mb={_payload_mb:.2f}")
         except Exception:
             print(f"Exception during inference for chunk {chunk_id}:")
             traceback.print_exc()
             # return a safe fallback to avoid crashing the worker
-            return [str(chunk_id) + "$" + "inference_error" + "$" + str(0)]
-        
-        # Load search space (inference chunks from redis)
-        #smiles_search = random.choice(self.state.value())
-        #smiles_search = random.choice(tmp_search_space)
+            return [str(chunk_id) + "$" + "inference_error" + "$" + str(0) + "$" + str(src_ts)]
 
-        # prepare inference args:
-        # model: MPNN to evaluate
-        # mol_dicts: List of molecules as MPNN-ready disctionary objections
-        # batch_size: Number of molecules per batch
-        # max_size: Maximum size of the molecules
-        #x_tmp = [convert_string_to_dict(smiles_search)]
-        #mol_dicts = np.array(x_tmp)
-        x_tmp = []
-        for smiles_search in tmp_search_space:
-            x_tmp.append(convert_string_to_dict(smiles_search))
-        mol_dicts = np.array(x_tmp)
-        max_size = max(len(x['atom']) for x in mol_dicts)
-        batch_size = len(mol_dicts)
-        
-        loader = make_data_loader(
-            mol_dicts,
-            batch_size=batch_size,
-            repeat=False,
-            max_size=max_size,
-        )
-        # save model
-        print("saved model parameters")
-        #model_name = '/mnt/media/MDStream/StreamML/saved_networks/model-' + str(model_id) + '.h5'
-        #model.save(model_name)
-
-        # predicted IP
-        pred_y = np.squeeze(model.predict(loader))
-        #sigmod_pred_y = np.array([sigmod(x) for x in pred_y])
-        #print("infer chunk_id: ", chunk_id, "search_smiles: ", smiles_search, " pred_y: ", pred_y)
-        #result = [str(chunk_id) + "$" + smiles_search + "$" + str(pred_y)]
+        # Emit one record per candidate, carrying src_ts so Rank can compute steering latency.
+        # enumerate() rather than .index(): the latter is O(n^2) over the chunk and returns the
+        # wrong prediction when a SMILES appears twice in the search space.
         result = []
-        for smiles_search in tmp_search_space:
-            line = str(chunk_id) + "$" + smiles_search + "$" + str(pred_y[tmp_search_space.index(smiles_search)])
-            #line = str(chunk_id) + "$" + smiles_search + "$" + str(sigmod_pred_y[tmp_search_space.index(smiles_search)])
-            result.append(line)
-        #self.state.update(weights_json_str)
+        for i, smiles_search in enumerate(tmp_search_space):
+            result.append(str(chunk_id) + "$" + smiles_search + "$" + str(pred_y[i]) + "$" + str(src_ts))
         return result

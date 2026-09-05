@@ -29,7 +29,7 @@ def load_dataset():
         return smiles_list, inchi_list, ip_list
 
 def load_dataset_from_redis():
-        redis_host = '128.110.96.26'
+        redis_host = 'REDIS_HOST'
         redis_port = 7485
 
         r = redis.Redis(host=redis_host, port=redis_port)
@@ -55,7 +55,7 @@ def SendData():
             print(e)
 
 def get_new_smile():
-        consumer = KafkaConsumer('Recommend', bootstrap_servers=['128.110.96.15:9092'])
+        consumer = KafkaConsumer('Recommend', bootstrap_servers=['KAFKA_HOST:9092'])
         for msg in consumer:
                 return eval(str(msg.value))
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
               time.sleep(3)
               #smiles, ip_simulate = SimulationTask(inchi)
 
-              producer = KafkaProducer(bootstrap_servers=["128.110.96.15:9092"], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+              producer = KafkaProducer(bootstrap_servers=["KAFKA_HOST:9092"], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
               timestamp = int(time.time() * 1000)
               model_id = random.choice(range(8))
               data = {"timestamp": timestamp, "smiles": smiles_train, "IP_simulate": ip_train, "model_id": model_id}

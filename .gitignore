@@ -1,4 +1,4 @@
-[200~MoStream/**/runinfo/
+MoStream/**/runinfo/
 MoStream/**/local/runinfo/
 MoStream/**/search_space/runinfo/
 MoStream/**/submit_scripts/*.sh.out
@@ -7,3 +7,44 @@ MoStream/**/submit_scripts/*.sh.out
 MoStream/MDStream/WLGenerator/search_space/MOS-search.csv
 MoStream/MDStream/StreamML/search_space/MOS-search-simple.txt
 MoStream/MDStream/WLGenerator/dataset/training-data.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# macOS
+__MACOSX/
+.DS_Store
+
+# Local-only files (never publish)
+cloudlab/cluster.conf
+
+
+
+# WSL / Windows interop junk
+*:Zone.Identifier
+
+# Reference PDFs kept locally, not in history (prior submissions, slides)
+paper/*.pdf
+
+# Root-level scratch .tex (slide decks). paper/*.tex IS tracked.
+/*.tex
+
+# ---------------------------------------------------------------------------
+# UNPUBLISHED RESEARCH. Do not push before submission.
+# The paper is under (anonymous) review for WORKS 2026; the repo is public, so
+# pushing the draft would both scoop the work and risk breaking double-blind.
+# These stay on the local machine only.
+paper/
+docs/
+results/
+
+# Build dependencies, fetched by scripts/fetch_jars.sh
+jars/*.jar
+
+# Generated figure scratch at the repo root
+/fig_*.png
+
+# Large pretrained weight dumps (regenerate with cloudlab/pretrain_surrogate.py)
+MoStream/MDStream/StreamML/networks/pretrained_weights.json
