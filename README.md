@@ -150,6 +150,7 @@ ionization potential, is from Colmena:
 
 - L. Ward et al., "Colmena: Scalable machine-learning-based steering of ensemble
   simulations for high performance computing", MLHPC 2021.
+  [IEEE Xplore](https://ieeexplore.ieee.org/document/9653177)
 - L. Ward et al., "Employing Artificial Intelligence to Steer Exascale Workflows with
   Colmena", IJHPCA 39(1), 2025.
 
@@ -160,11 +161,8 @@ The surrogate architecture is a message-passing neural network built with
 
 Our own contribution, the Flink pipeline under `MoStream/MDStream/StreamML/` and the
 tooling under `cloudlab/` and `scripts/`, is released under the MIT License, in `LICENSE`.
-
-The upstream multi-site-campaigns repository publishes no license, so the vendored
-`moldesign` sources carry no explicit grant of rights and are not covered by that MIT
-License. Anyone intending to redistribute or build on this repository should contact the
-upstream authors first. See `THIRD_PARTY.md` for the details.
+The vendored `moldesign` sources remain the work of their original authors and are cited
+above rather than relicensed here.
 
 ## Notes
 
