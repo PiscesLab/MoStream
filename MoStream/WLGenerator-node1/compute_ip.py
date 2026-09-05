@@ -23,7 +23,7 @@ def SendData():
             print(e)
 
 def get_new_smile():
-        consumer = KafkaConsumer('Result', bootstrap_servers=['128.110.96.15:9092'])
+        consumer = KafkaConsumer('Result', bootstrap_servers=['KAFKA_HOST:9092'])
         for msg in consumer:
             return msg.value
 

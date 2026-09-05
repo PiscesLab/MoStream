@@ -49,9 +49,12 @@ grep -q "^jobmanager.rpc.address:" "$CONFIG" \
     && sed -i "s|^jobmanager.rpc.address:.*|jobmanager.rpc.address: $JM_IP|" "$CONFIG" \
     || echo "jobmanager.rpc.address: $JM_IP" >> "$CONFIG"
 
-# Bind REST UI to all interfaces so the web UI is reachable from outside
-grep -q "^rest.bind-address:" "$CONFIG"    || echo "rest.bind-address: 0.0.0.0"    >> "$CONFIG"
-grep -q "^jobmanager.bind-host:" "$CONFIG" || echo "jobmanager.bind-host: 0.0.0.0" >> "$CONFIG"
+# SECURITY: bind REST/UI and RPC to the INTERNAL address only, NEVER 0.0.0.0. Flink's REST API is
+# unauthenticated and allows job submission, i.e. arbitrary code execution; a 0.0.0.0 bind exposes
+# that RCE surface to the public internet and led to a cluster compromise (rogue services / rev
+# shell dropped within days). For remote UI access use an SSH tunnel, not an open port.
+grep -q "^rest.bind-address:" "$CONFIG"    || echo "rest.bind-address: $JM_IP"    >> "$CONFIG"
+grep -q "^jobmanager.bind-host:" "$CONFIG" || echo "jobmanager.bind-host: $JM_IP" >> "$CONFIG"
 grep -q "^rest.address:" "$CONFIG"      || echo "rest.address: $JM_IP"       >> "$CONFIG"
 
 # Python bundle settings (match what MDWorkflow.py sets via Configuration object)
@@ -122,7 +125,7 @@ echo "To start the JobManager:"
 echo "  $FLINK_HOME/bin/jobmanager.sh start"
 echo ""
 echo "Flink web UI (once JM is running):"
-echo "  http://128.110.96.29:8081"
+echo "  http://$JM_IP:8081"
 echo ""
 echo "NOTE: Copy model.h5 to /mnt/media/MDStream/StreamML/networks/ before submitting the job."
 echo "NOTE: Copy MOS-search-simple.txt to ~/MoStream/MoStream/MDStream/StreamML/search_space/"

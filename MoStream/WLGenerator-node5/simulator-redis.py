@@ -29,7 +29,7 @@ def load_dataset():
         return smiles_list, inchi_list, ip_list
 
 def load_dataset_from_redis():
-        redis_host = '128.110.96.26'
+        redis_host = 'REDIS_HOST'
         redis_port = 7485
 
         r = redis.Redis(host=redis_host, port=redis_port)

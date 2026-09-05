@@ -42,10 +42,10 @@
   \toprule
   Node & Hostname & Public IP & Role \\
   \midrule
-  \texttt{apt051} & \texttt{apt051.apt.emulab.net} & \texttt{128.110.96.51} & Kafka Broker \\
-  \texttt{apt041} & \texttt{apt041.apt.emulab.net} & \texttt{128.110.96.41} & Flink JobManager \\
-  \texttt{apt063} & \texttt{apt063.apt.emulab.net} & \texttt{128.110.96.63} & Flink TaskManager \\
-  \texttt{apt055} & \texttt{apt055.apt.emulab.net} & \texttt{128.110.96.55} & WLGenerator (Simulator) \\
+  \texttt{apt051} & \texttt{apt051.apt.emulab.net} & \texttt{KAFKA_HOST} & Kafka Broker \\
+  \texttt{apt041} & \texttt{apt041.apt.emulab.net} & \texttt{KAFKA_HOST} & Flink JobManager \\
+  \texttt{apt063} & \texttt{apt063.apt.emulab.net} & \texttt{KAFKA_HOST} & Flink TaskManager \\
+  \texttt{apt055} & \texttt{apt055.apt.emulab.net} & \texttt{KAFKA_HOST} & WLGenerator (Simulator) \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -187,7 +187,7 @@ services:
 \subsection{Start Kafka}
 \begin{lstlisting}
 cd ~/MoStream
-KAFKA_HOST=128.110.96.51 docker compose up -d
+KAFKA_HOST=KAFKA_HOST docker compose up -d
 \end{lstlisting}
 
 Verify:
@@ -240,13 +240,13 @@ sudo bash -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
 DNS for \texttt{apt041.apt.emulab.net} fails intermittently on this node. Use the public IP
 in \texttt{\textasciitilde/flink/conf/config.yaml}:
 \begin{lstlisting}
-sed -i 's/apt041\.apt\.emulab\.net/128.110.96.41/g' ~/flink/conf/config.yaml
+sed -i 's/apt041\.apt\.emulab\.net/KAFKA_HOST/g' ~/flink/conf/config.yaml
 \end{lstlisting}
 
 Verify:
 \begin{lstlisting}
 grep -E "rpc.address|address:" ~/flink/conf/config.yaml
-# Expected: address: 128.110.96.41  (all three occurrences)
+# Expected: address: KAFKA_HOST  (all three occurrences)
 \end{lstlisting}
 
 \subsection{Package installs}
@@ -279,7 +279,7 @@ sed -i 's/\r//' ~/MoStream/cloudlab/submit_job.sh
 bash ~/MoStream/cloudlab/submit_job.sh
 \end{lstlisting}
 
-\textbf{Note (v2):} \texttt{submit\_job.sh} uses \texttt{KAFKA\_HOST=128.110.96.51}
+\textbf{Note (v2):} \texttt{submit\_job.sh} uses \texttt{KAFKA\_HOST=KAFKA_HOST}
 (public IP of apt051). The old \texttt{10.10.1.1} internal IP only exists on apt051's
 Docker bridge -- it is not reachable from apt041.
 
@@ -307,7 +307,7 @@ pip install requests qcelemental
 source ~/miniconda3/etc/profile.d/conda.sh && conda activate mostream
 cd ~/MoStream/MoStream/WLGenerator-node1
 
-KAFKA_BOOTSTRAP=128.110.96.51:9092 python simulator.py \
+KAFKA_BOOTSTRAP=KAFKA_HOST:9092 python simulator.py \
   --topic Simulation --interval 1.0
 \end{lstlisting}
 
@@ -344,8 +344,8 @@ echo 'export MOSTREAM_SKIP_PRETRAINED=0' >> ~/flink/conf/flink-env.sh
   Item & Status & Notes \\
   \midrule
   Kafka running on apt051               & \itemdone    & apache/kafka:3.7.0 (KRaft, no ZK) \\
-  Advertised listener fix               & \itemdone    & \texttt{KAFKA\_HOST=128.110.96.51} \\
-  Simulator sending messages            & \itemdone    & \texttt{KAFKA\_BOOTSTRAP=128.110.96.51:9092} \\
+  Advertised listener fix               & \itemdone    & \texttt{KAFKA\_HOST=KAFKA_HOST} \\
+  Simulator sending messages            & \itemdone    & \texttt{KAFKA\_BOOTSTRAP=KAFKA_HOST:9092} \\
   Flink JM running on apt041            & \itemdone    & IP-based config; DNS unreliable \\
   Flink TM running on apt063            & \itemdone    & Started manually (not via start-cluster.sh) \\
   Flink network memory fix              & \itemdone    & min = max = 512m in MDWorkflow.py \\
@@ -368,9 +368,9 @@ echo 'export MOSTREAM_SKIP_PRETRAINED=0' >> ~/flink/conf/flink-env.sh
 \bigskip
 \textbf{Hardcoded / experiment-specific values (must revisit if nodes change):}
 \begin{itemize}
-  \item \texttt{cloudlab/submit\_job.sh}: \texttt{KAFKA\_HOST="128.110.96.51"} -- public IP of apt051.
-  \item \texttt{simulator.py}: \texttt{KAFKA\_BOOTSTRAP=128.110.96.51:9092}.
-  \item \texttt{flink/conf/config.yaml} on apt041: \texttt{jobmanager.rpc.address: 128.110.96.41}.
+  \item \texttt{cloudlab/submit\_job.sh}: \texttt{KAFKA\_HOST="KAFKA_HOST"} -- public IP of apt051.
+  \item \texttt{simulator.py}: \texttt{KAFKA\_BOOTSTRAP=KAFKA_HOST:9092}.
+  \item \texttt{flink/conf/config.yaml} on apt041: \texttt{jobmanager.rpc.address: KAFKA_HOST}.
   \item \texttt{MOSTREAM\_SKIP\_PRETRAINED=1} -- pretrained weights incompatible (nfp version mismatch).
 \end{itemize}
 

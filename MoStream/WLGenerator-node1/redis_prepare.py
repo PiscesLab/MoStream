@@ -52,7 +52,7 @@ if __name__ == "__main__":
         smiles_list_train, inchi_list_train, ip_list_train = load_train_dataset()
         #smiles_list_search, inchi_list_search, _ = load_search_dataset()
         
-        redis_host = '128.110.96.26'
+        redis_host = 'REDIS_HOST'
         redis_port = 7485
     
         r = redis.Redis(host=redis_host, port=redis_port)

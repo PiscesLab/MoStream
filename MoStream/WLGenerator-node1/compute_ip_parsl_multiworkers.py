@@ -19,7 +19,7 @@ from rdkit import Chem
 import logging
 
 def SendData(data):
-        producer = KafkaProducer(bootstrap_servers=["128.110.96.8:9092"], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+        producer = KafkaProducer(bootstrap_servers=["KAFKA_HOST:9092"], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
         future = producer.send('Simulation', data)
         try:
             record_metadata = future.get(timeout=10)
@@ -38,7 +38,7 @@ def SimulationTask(smiles, est_ip, recommend_time):
         from kafka import KafkaConsumer
 
         def SendData(data):
-            producer = KafkaProducer(bootstrap_servers=["128.110.96.8:9092"], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+            producer = KafkaProducer(bootstrap_servers=["KAFKA_HOST:9092"], acks=0, retries=10, api_version=(0,10,0), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
             future = producer.send('Simulation', data)
             try:
                record_metadata = future.get(timeout=10)
@@ -86,7 +86,7 @@ if __name__ == "__main__":
             ]
         )
         parsl.load(config)
-        consumer = KafkaConsumer('Result', bootstrap_servers=['128.110.96.8:9092'])
+        consumer = KafkaConsumer('Result', bootstrap_servers=['KAFKA_HOST:9092'])
         for msg in consumer:
               value = str(msg.value)
               smiles = value.split(" ")[1]

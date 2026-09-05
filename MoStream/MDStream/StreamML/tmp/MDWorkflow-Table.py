@@ -34,7 +34,7 @@ def workflow():
     ) with (
         'connector' = 'kafka',
         'topic' = 'Simulation',
-        'properties.bootstrap.servers' = '128.110.96.15:9092',
+        'properties.bootstrap.servers' = 'KAFKA_HOST:9092',
         'properties.group.id' = 'simulate',
         'scan.startup.mode' = 'latest-offset',
         'json.fail-on-missing-field' = 'false',
@@ -52,7 +52,7 @@ def workflow():
     ) with (
         'connector' = 'kafka',
         'topic' = 'Result',
-        'properties.bootstrap.servers' = '128.110.96.15:9092',
+        'properties.bootstrap.servers' = 'KAFKA_HOST:9092',
         'scan.startup.mode' = 'latest-offset',
         'json.fail-on-missing-field' = 'false',
         'json.ignore-parse-errors' = 'true',

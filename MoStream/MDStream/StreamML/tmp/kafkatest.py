@@ -14,7 +14,7 @@ def train():
 
     # Configure the Kafka consumer properties
     kafka_consumer_props = {
-      'bootstrap.servers': '128.110.96.15:9092',
+      'bootstrap.servers': 'KAFKA_HOST:9092',
       'group.id': 'my-consumer-group'
     }
 
@@ -34,7 +34,7 @@ def train():
 
     # Configure the Kafka producer properties
     kafka_producer_props = {
-      'bootstrap.servers': '128.110.96.15:9092',
+      'bootstrap.servers': 'KAFKA_HOST:9092',
       'acks': 'all'
     }
 

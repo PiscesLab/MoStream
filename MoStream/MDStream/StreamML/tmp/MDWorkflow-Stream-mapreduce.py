@@ -15,7 +15,7 @@ def workflow():
 
     # Configure the Kafka consumer properties
     #kafka_consumer_props = {
-    #  'bootstrap.servers': '128.110.96.15:9092',
+    #  'bootstrap.servers': 'KAFKA_HOST:9092',
     #  'group.id': 'my-consumer-group'
     #}
 
@@ -29,7 +29,7 @@ def workflow():
     #   KafkaTopicPartition("Simulation", 16)
     #}
     kafka_source = KafkaSource.builder() \
-      .set_bootstrap_servers('128.110.96.15:9092') \
+      .set_bootstrap_servers('KAFKA_HOST:9092') \
       .set_group_id('my-group') \
       .set_topics("Simulation") \
       .set_starting_offsets(KafkaOffsetsInitializer.latest()) \
@@ -50,7 +50,7 @@ def workflow():
 
     # Configure the Kafka producer properties
     #kafka_producer_props = {
-    #  'bootstrap.servers': '128.110.96.15:9092',
+    #  'bootstrap.servers': 'KAFKA_HOST:9092',
     #  'acks': 'all'
     #}
 
@@ -68,7 +68,7 @@ def workflow():
     #   KafkaTopicPartition("Result", 16)
     #}
     sink = KafkaSink.builder() \
-      .set_bootstrap_servers('128.110.96.15:9092') \
+      .set_bootstrap_servers('KAFKA_HOST:9092') \
       .set_record_serializer(
         KafkaRecordSerializationSchema.builder()
             .set_topic("Result")
