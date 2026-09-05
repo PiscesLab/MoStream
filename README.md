@@ -125,9 +125,17 @@ bash cloudlab/submit_job.sh        # PARALLELISM, STARTING_OFFSET, FLINK_HOME ar
 
 ## Reproducing the figures
 
-The plotting scripts in `cloudlab/` regenerate each figure from measured data under `results/`
-(produced by the experiments; not included in the repository). Run each from the repository root in
-the `mostream` environment:
+The plotting scripts in `cloudlab/` regenerate each figure from measured data under `results/`.
+That data is not on this branch. It lives on the `results-data` branch, which is this branch plus
+a 2.9 MB `results/` directory, so checking it out regenerates all eight figures with nothing else
+to fetch:
+
+```bash
+git checkout results-data
+conda activate mostream
+```
+
+Run each script from the repository root:
 
 | Figure | Script | Input data |
 |--------|--------|-----------|
