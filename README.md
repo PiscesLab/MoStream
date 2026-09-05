@@ -1,172 +1,130 @@
-# MoStream — Quick start
+# MoStream
 
-This README explains how to get a local environment running to test the `WLGenerator` simulator and the Flink pipeline `MDWorkflow.py` with Kafka. It provides Docker commands to run Kafka, steps to create the required topic, how to run the simulator in both dry-run and Kafka modes, and how to run the Flink pipeline locally (or in local mode) for experimentation.
+MoStream is a streaming active-learning pipeline for molecular discovery. A simulator emits
+molecules (SMILES plus a simulated ionization potential) to Kafka; a PyFlink job trains a
+message-passing neural network on the stream, scores a candidate search space, ranks candidates by
+an upper-confidence-bound score, and feeds the top recommendations back to the simulator, closing
+the active-learning loop. It runs locally for testing and distributed on a standalone Flink 2.0
+cluster with native Kafka.
 
-## Prerequisites
-- Git
-- Docker & Docker Compose
-- Python 3.8+ and pip
-- Java (required for Flink/PyFlink if running the full pipeline)
+## Repository layout
 
-## Recommended workspace layout
-Clone the repository then cd into it.
-
-## Start Kafka with Docker Compose
-Create a `docker-compose.yml` file (example below) or run a single-node Kafka via Docker.
-
-Example `docker-compose.yml` (single-node Zookeeper + Kafka):
-
-```yaml
-version: '3.8'
-services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.2.1
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - 2181:2181
-
-  kafka:
-    image: confluentinc/cp-kafka:7.2.1
-    depends_on:
-      - zookeeper
-    ports:
-      - 9092:9092
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+```
+MoStream/MDStream/StreamML/     the Flink pipeline: MDWorkflow.py + operator UDFs
+                                (NPMMModel.py = Train, Inference.py = Infer, Ranking.py = Rank)
+MoStream/WLGenerator-node1/     the closed-loop simulator (polls Recommend, runs the oracle)
+cloudlab/                       cluster deploy (submit_job.sh, setup + restart scripts) and
+                                figure-plotting scripts (plot_*.py, make_figures.py)
+scripts/                        node setup scripts (Kafka, JobManager)
+requirements.txt                hard-pinned runtime dependencies (see note below)
+requirements-dev.txt            looser local dev set
 ```
 
-Start services:
+## Environment
+
+Use a dedicated Python 3.9 environment. Runtime dependencies are **hard-pinned** in
+`requirements.txt` (`nfp==0.1.3`, `h5py==3.1.0`, `pandas<2`, `numpy<2`, `tensorflow==2.14.0`,
+`apache-flink==2.0.0`): the saved model was written with `nfp` 0.1.x layers and a non-standard HDF5
+float type, and `pandas>=2` breaks the apache-beam used internally by PyFlink on Python 3.9. Do not
+bump these without regenerating the model.
+
+```bash
+conda create -n mostream python=3.9
+conda activate mostream
+pip install -r requirements.txt
+```
+
+## Data and model files
+
+The trained model and the seed training table ship with the repository:
+
+| File | Size | In repo |
+| --- | --- | --- |
+| `MDStream/StreamML/networks/model.h5` | 2.8 MB | yes |
+| `*/dataset/training-data-simple.txt` | 600 KB | yes |
+
+Three larger inputs are distributed separately, because the candidate search space alone
+holds about 1.1 million molecules and exceeds the GitHub per-file size limit:
+
+- `MDStream/StreamML/search_space/MOS-search-simple.txt` (193 MB)
+- `MDStream/WLGenerator/search_space/MOS-search.csv`
+- `MDStream/WLGenerator/dataset/training-data.json`
+
+**Download:** [Google Drive](https://drive.google.com/drive/folders/1HLcg6sIDlEDwt4GKN6UcShYovxWzcGyq?usp=sharing)
+
+The folder is access controlled. Use the *Request access* button on the Drive page and the
+maintainers will approve it.
+
+The Drive layout mirrors this repository, so copy the contents of `StreamData/MDStream/` into
+`MoStream/MDStream/` and the files land where the operators expect them. To keep the search
+space elsewhere, point `KAFKA_SEARCH_SPACE_PATH` at it instead. Every TaskManager needs its own
+local copy, because `Infer` reads a chunk directly from disk rather than over the network.
+
+## Quick local test (no cluster)
+
+Run the pipeline logic with an in-memory source, no Kafka required:
+
+```bash
+python MoStream/MDStream/StreamML/MDWorkflow.py --local
+```
+
+To exercise the full path locally, start a single-node Kafka (a `docker-compose.yml` is provided)
+and create the two topics:
+
 ```bash
 docker compose up -d
-```
-
-Verify Kafka is up (you may wait a few seconds):
-```bash
-docker compose ps
-```
-
-## Create the `Simulation` topic
-If Kafka allows auto-create, producing will create it automatically. To create explicitly (using kafka-topics inside the broker container):
-
-```bash
-# Run inside the kafka container (adjust container name)
 docker compose exec kafka kafka-topics --create --topic Simulation --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+docker compose exec kafka kafka-topics --create --topic Recommend   --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
 ```
 
-To list topics:
-```bash
-docker compose exec kafka kafka-topics --list --bootstrap-server localhost:9092
-```
-
-## Python environment
-Create a virtualenv and install the minimal dependency needed to run the simulator and tests:
+Run the job against Kafka (use `earliest` and a fresh group id to replay existing messages):
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip
-python3 -m pip install kafka-python
+python MoStream/MDStream/StreamML/MDWorkflow.py --kafka-bootstrap localhost:9092 --starting-offset earliest --group-id debug-1
 ```
 
-Note: `MDWorkflow.py` depends on PyFlink and other libraries (rdkit, moldesign). If you want to run the full Flink job, you must install PyFlink and ensure Flink is available. For quick experimentation, `MDWorkflow.py --local` uses an in-memory source and doesn't require Kafka.
-
-## Running the simulator
-Dry-run (no Kafka): prints JSON messages to stdout — good for testing message format.
+Run the closed-loop simulator (this is the one that closes the loop by polling `Recommend`):
 
 ```bash
-python3 MoStream/MDStream/WLGenerator/simulator.py --local --interval 0.5
+python MoStream/WLGenerator-node1/simulator.py --topic Simulation --interval 1.0
+# on a cluster the bootstrap comes from the KAFKA_BOOTSTRAP environment variable
 ```
 
-Kafka mode (requires Kafka running):
+Two topics are used: `Simulation` (simulator to Flink) and `Recommend` (Flink to simulator).
+
+## Cluster deployment
+
+1. Copy `cloudlab/cluster.conf.template` to `cloudlab/cluster.conf` and fill in the node hosts
+   (`KAFKA_HOST`, `JM_HOST`, `TM_HOST`, `SIMULATOR_HOST`).
+2. Bring up Kafka, the Flink JobManager, and a TaskManager using the setup scripts in `scripts/`
+   and `cloudlab/`.
+3. Submit the job from the JobManager:
 
 ```bash
-python3 MoStream/MDStream/WLGenerator/simulator.py --kafka-bootstrap localhost:9092 --topic Simulation --interval 1.0 --model-id 1
+bash cloudlab/submit_job.sh        # PARALLELISM, STARTING_OFFSET, FLINK_HOME are env-overridable
 ```
 
-You should see logs like:
-```
-[simulator] Creating KafkaProducer connecting to localhost:9092
-[simulator] KafkaProducer created
-[simulator] Message sent for CCO
-```
+`submit_job.sh` sources `cluster.conf` and runs `flink run -py MDWorkflow.py`.
 
-## Running MDWorkflow
-Local (no Kafka) — useful for testing the pipeline's logic:
+## Reproducing the figures
 
-```bash
-python3 MoStream/MDStream/StreamML/MDWorkflow.py --local
-```
+The plotting scripts in `cloudlab/` regenerate each figure from measured data under `results/`
+(produced by the experiments; not included in the repository). Run each from the repository root in
+the `mostream` environment:
 
-Kafka mode (will consume from `Simulation` topic). Use `--starting-offset earliest` to read existing messages and `--group-id` to set a fresh consumer group:
+| Figure | Script | Input data |
+|--------|--------|-----------|
+| Throughput vs parallelism | `plot_scaling_tf.py` | per-rep values embedded in the script |
+| Operator utilization | `make_figures.py` (`fig_utilisation`) | `results/e3/metrics_p*.csv` |
+| Steering-latency CDF | `make_figures.py` (`fig_latency`) | `results/e0/e0_tuned.csv` |
+| Latency vs load | `plot_latency_model.py` | `results/latsweep*/summary.json` |
+| Worker memory footprint | `plot_footprint_combined.py` | `results/e1/tm_memory.log`, `results/e7_long.csv` |
+| Bounded operator state | `plot_systems_panels.py` (`checkpoint`) | measured rate constants in the script |
+| Fault recovery | `plot_systems_panels.py` (`recovery`) | `results/e4trace/trace.json` |
+| End-to-end discovery | `plot_discovery.py` | `results/campaign/oracle_*.log` |
 
-```bash
-python3 MoStream/MDStream/StreamML/MDWorkflow.py --kafka-bootstrap localhost:9092 --starting-offset earliest --group-id debug-group-1
-```
+## Notes
 
-Notes:
-- Running `MDWorkflow.py` requires PyFlink and a proper Flink runtime; if PyFlink is not installed or Flink isn’t configured, the script will fail. Use `--local` to run pipeline logic without Kafka/PyFlink for simple testing.
-- If `MDWorkflow.py` shows no output when using Kafka, check consumer starting offsets and group id — using `--starting-offset earliest` and a new `--group-id` usually makes it consume existing messages.
-
-## Troubleshooting
-- If `ModuleNotFoundError: No module named 'kafka'` appears, install kafka-python in your environment: `python3 -m pip install kafka-python`.
-- If Flink job fails on import, install PyFlink or run in `--local` mode.
-- Check Kafka logs: `docker compose logs kafka`.
-
-## Local HTTP shim for quick testing (no Kafka needed)
-
-If you want to test simulator <-> MDWorkflow message exchange without Kafka or a full Flink runtime, two helpers are provided:
-
-- `MDWorkflow_local.py` — tiny server that accepts POST /simulate and returns a small recommendation POST back to the simulator.
-- `simulator.py --local` — posts simulation payloads to the MDWorkflow local server and runs a small HTTP server to accept recommendations.
-
-Quick commands:
-
-Terminal A:
-```bash
-python3 MDWorkflow_local.py --host 0.0.0.0 --port 5001 --sim-host localhost --sim-port 5000
-```
-
-Terminal B:
-```bash
-python3 MoStream/MDStream/WLGenerator/simulator.py --local --md-host localhost --md-port 5001 --local-port 5000 --interval 1.0
-```
-
-You should see round-trip POST logs on both sides. This is recommended for quick developer testing.
-
-## MDWorkflow in-pipeline posting (local Flink mode)
-
-`MDWorkflow.py --local` has been extended to attach a map operator in local mode that will POST each recommendation string to the simulator HTTP endpoint (configured via `SIM_HOST`/`SIM_PORT` environment variables). This requires `pyflink` and a working Flink environment.
-
-Example:
-
-```bash
-export SIM_HOST=localhost
-export SIM_PORT=5000
-python3 MoStream/MDStream/StreamML/MDWorkflow.py --local
-```
-
-Then run the simulator to receive recommendation posts:
-
-```bash
-python3 MoStream/MDStream/WLGenerator/simulator.py --local --local-port 5000
-```
-
-If you want I can add a small launcher script to start both services with one command.
-
-## Optional: verify messages in topic
-You can use kafka-console-consumer inside the container to peek messages:
-
-```bash
-docker compose exec kafka kafka-console-consumer --bootstrap-server localhost:9092 --topic Simulation --from-beginning --max-messages 5
-```
-
-## Contribution
-Add issues and PRs for better integration, tests, and CI. Consider adding a full `requirements.txt` listing `kafka-python`, `pyflink`, `rdkit`, `moldesign` if you intend to run the full pipeline.
-
----
-
+- Kafka mode showing no output is almost always a consumer offset/group issue: use
+  `--starting-offset earliest` and a fresh `--group-id`.
+- All pipeline randomness is seeded (`random_state = 1`) for repeatable train/valid splits.
