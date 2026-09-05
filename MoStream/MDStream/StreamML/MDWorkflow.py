@@ -95,8 +95,12 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     # project NFS, mounted and writable on BOTH the JobManager and the TaskManager, which
     # FileSystemCheckpointStorage requires (the TM writes state, the JM writes the metadata).
     config.set_string("execution.checkpointing.storage", "filesystem")
-    config.set_string("execution.checkpointing.dir",
-                      "file:///proj/pisceslabsd-PG0/NamSDSU/flink-checkpoints")
+    # Site specific: override with MOSTREAM_CHECKPOINT_DIR. Must be a path every
+    # TaskManager and the JobManager can write, since the TMs write state and the JM
+    # writes the metadata.
+    _ckpt_dir = os.environ.get("MOSTREAM_CHECKPOINT_DIR",
+                               "file:///tmp/mostream-flink-checkpoints")
+    config.set_string("execution.checkpointing.dir", _ckpt_dir)
     env = StreamExecutionEnvironment.get_execution_environment(config)
 
     # --- JARs: use URIs (handles spaces automatically)
@@ -199,15 +203,62 @@ def workflow(kafka_bootstrap='localhost:9092', local_mode=False):
     # the same reason as persist_weights -- the env var exists on the client but not in the
     # TaskManager's Beam worker, so it must travel as a constructor argument.
     _train_once = os.environ.get("MOSTREAM_TRAIN_ONCE", "0") == "1"
+    # Round-based baseline arm: emulate task-based execution by refreshing the model only every
+    # MOSTREAM_ROUND_SECONDS seconds instead of on every record. Within a round Train skips the
+    # gradient step and re-emits the current weights, exactly like the train_once freeze, so every
+    # downstream operator is unchanged and the arms differ in one factor: WHEN a completed result
+    # becomes visible to the ranking (every record vs once per round). 0 keeps continuous per-record
+    # fitting. Passed as a constructor argument, like the flags above, because the submission env
+    # var does not reach the Beam worker.
+    _round_seconds = int(os.environ.get("MOSTREAM_ROUND_SECONDS", "0"))
     # E5 sweep: size of Train's sliding window, i.e. how many molecules the surrogate learns
     # from. Separate from the SGD minibatch. Unset keeps the historical window of 16, which
     # measurably cannot generalize (0 hits in 1164 recommendations against a 14.1% base rate).
     _window = os.environ.get("MOSTREAM_WINDOW")
+    # Recovery consistency (reviewer change 5): immutable versioned weight files plus the exact
+    # version committed to Flink-checkpointed state. Resolved client-side and passed in, like the
+    # flags above, because the env var does not reach the Beam worker. Off by default.
+    _versioned_weights = os.environ.get("MOSTREAM_VERSIONED_WEIGHTS", "0") == "1"
+    # WARM-START (E5 discovery arms): filesystem path to a JSON file of pretrained surrogate
+    # weights. Set => the surrogate starts from that checkpoint instead of random init AND Train
+    # un-gates emission (no full-window warm-up), so Infer/Rank produce from the first record.
+    # Empty/unset => from-scratch, the not-ready gate still applies, so the latency/memory/scaling
+    # experiments are unaffected. Resolved HERE and passed as a constructor argument, like the flags
+    # above, because a submission env var does not reach the TaskManager's Beam worker.
+    _pretrained_path = os.environ.get("MOSTREAM_PRETRAINED_WEIGHTS", "").strip()
+    # STATIC arm: freeze the warm-started model so it NEVER fits (do_fit forced False), isolating
+    # "a good surrogate" from "an ONLINE surrogate". Passed in for the same reason.
+    _freeze = os.environ.get("MOSTREAM_FREEZE", "0") == "1"
+    # STABLE ONLINE FINE-TUNE (continuous-arm stability). MOSTREAM_REPLAY=1 makes each online update
+    # fit ONE pass over (a fixed seed anchor + the current window) at a gentle lr with no tiny-window
+    # scale-override, so the warm-started surrogate is nudged, not corrupted (the plain continuous arm
+    # blows search-space predictions to ~262/-49 V after a single step on a 1-2 molecule window).
+    # Intended to be combined with MOSTREAM_PRETRAINED_WEIGHTS. Default OFF => every other arm is
+    # unchanged. Resolved HERE and passed as constructor args, like the flags above, because a
+    # submission env var does not reach the TaskManager's Beam worker. MOSTREAM_REPLAY_DATA is the
+    # path to the labeled seed set (smiles+ip) used for the anchor; unset falls back to the repo-
+    # relative training-data-simple.txt (must be present on the TaskManager -- it is NOT shipped by
+    # add_python_file, which only distributes StreamML).
+    _replay = os.environ.get("MOSTREAM_REPLAY", "0") == "1"
+    _replay_anchor = int(os.environ.get("MOSTREAM_REPLAY_ANCHOR", "64"))
+    _replay_lr = float(os.environ.get("MOSTREAM_REPLAY_LR", "1e-5"))
+    _replay_data = os.environ.get("MOSTREAM_REPLAY_DATA", "").strip() or None
+    _replay_min_window = int(os.environ.get("MOSTREAM_REPLAY_MIN_WINDOW", "1"))
     print(f"[MDWorkflow] persist_weights={_persist_weights} train_once={_train_once} "
-          f"window={_window or 'default(16)'}")
-    train_stream = extracted_stream.key_by(lambda x: x[2]) \
+          f"round_seconds={_round_seconds} window={_window or 'default(16)'} versioned_weights={_versioned_weights} "
+          f"pretrained={_pretrained_path or 'OFF'} freeze={_freeze} "
+          f"replay={_replay} (anchor={_replay_anchor} lr={_replay_lr} data={_replay_data or 'default'})")
+    # E8 single-key mode: with versioned weights on, route the whole stream to one key so the
+    # recovery-consistency test has a single coherent training window, model, and version counter.
+    # Normal mode keeps per-model_id keying.
+    _train_key = (lambda x: "0") if _versioned_weights else (lambda x: x[2])
+    train_stream = extracted_stream.key_by(_train_key) \
         .process(TrainFunction(persist_weights=_persist_weights, train_once=_train_once,
-                               window_size=int(_window) if _window else None),
+                               window_size=int(_window) if _window else None,
+                               versioned_weights=_versioned_weights, round_seconds=_round_seconds,
+                               pretrained_path=_pretrained_path or None, freeze=_freeze,
+                               replay=_replay, replay_anchor=_replay_anchor, replay_lr=_replay_lr,
+                               replay_data=_replay_data, replay_min_window=_replay_min_window),
                  output_type=Types.STRING()) \
         .map(lambda x: ((int(x.split("$")[0]), x.split("$")[1], int(x.split("$")[2]), x.split("$")[3], int(x.split("$")[4]))),
              output_type=Types.TUPLE([Types.INT(), Types.STRING(), Types.INT(), Types.STRING(), Types.LONG()])).name("Parse->Train")

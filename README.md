@@ -32,7 +32,11 @@ bump these without regenerating the model.
 conda create -n mostream python=3.9
 conda activate mostream
 pip install -r requirements.txt
+./scripts/fetch_jars.sh          # Flink Kafka connector JARs, not tracked in git
 ```
+
+`fetch_jars.sh` pulls two JARs from Maven Central into `jars/`. `MDWorkflow.py` loads both
+at submission time, so run it once per checkout and on every node that submits the job.
 
 ## Data and model files
 
@@ -92,6 +96,19 @@ python MoStream/WLGenerator-node1/simulator.py --topic Simulation --interval 1.0
 
 Two topics are used: `Simulation` (simulator to Flink) and `Recommend` (Flink to simulator).
 
+## Configuration
+
+Nothing in the pipeline hardcodes a site-specific path. Each of these has a working default,
+so a plain checkout runs without setting any of them.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `MOSTREAM_MODEL_PATH` | `MDStream/StreamML/networks/model.h5` | Surrogate architecture loaded at operator startup |
+| `KAFKA_SEARCH_SPACE_PATH` | `MDStream/StreamML/search_space/MOS-search-simple.txt` | Candidate search space read by `Infer` |
+| `MOSTREAM_TRAINING_DATA` | the copy in `WLGenerator-node1/dataset/` | Seed table the simulator draws from |
+| `MOSTREAM_CHECKPOINT_DIR` | `file:///tmp/mostream-flink-checkpoints` | Flink checkpoint storage, must be writable by the JobManager and every TaskManager |
+| `JARS_DIR` | `jars/` | Where `fetch_jars.sh` puts the connector JARs |
+
 ## Cluster deployment
 
 1. Copy `cloudlab/cluster.conf.template` to `cloudlab/cluster.conf` and fill in the node hosts
@@ -122,6 +139,30 @@ the `mostream` environment:
 | Bounded operator state | `plot_systems_panels.py` (`checkpoint`) | measured rate constants in the script |
 | Fault recovery | `plot_systems_panels.py` (`recovery`) | `results/e4trace/trace.json` |
 | End-to-end discovery | `plot_discovery.py` | `results/campaign/oracle_*.log` |
+
+## Attribution
+
+The molecular design code in this repository is not original work. The `moldesign`
+package vendored under `MoStream/*/moldesign/` comes from the ExaLearn
+[multi-site-campaigns](https://github.com/exalearn/multi-site-campaigns) artifact, and the
+application it implements, an active-learning search for organic electrolytes with high
+ionization potential, is from Colmena:
+
+- L. Ward et al., "Colmena: Scalable machine-learning-based steering of ensemble
+  simulations for high performance computing", MLHPC 2021.
+- L. Ward et al., "Employing Artificial Intelligence to Steer Exascale Workflows with
+  Colmena", IJHPCA 39(1), 2025.
+
+The surrogate architecture is a message-passing neural network built with
+[nfp](https://github.com/NREL/nfp), and the reference property values come from xTB through
+[QCEngine](https://github.com/MolSSI/QCEngine) and
+[geomeTRIC](https://github.com/leeping/geomeTRIC).
+
+The upstream multi-site-campaigns repository publishes no license, so the vendored
+`moldesign` sources carry no explicit grant of rights. Anyone intending to redistribute or
+build on this repository should contact the upstream authors first. Our own contribution,
+the Flink pipeline under `MoStream/MDStream/StreamML/` and the tooling under `cloudlab/`
+and `scripts/`, is covered by the LICENSE file at the repository root.
 
 ## Notes
 

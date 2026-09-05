@@ -11,12 +11,35 @@ from moldesign.simulate.specs import get_qcinput_specification
 from moldesign.store.models import MoleculeData
 from moldesign.store.recipes import apply_recipes
 from rdkit import Chem
+import os
 import logging
 logger = logging.getLogger("qcengine")
 logger.setLevel(logging.CRITICAL)
 
+# Seed training data. MOSTREAM_TRAINING_DATA overrides; otherwise fall back to the
+# shared cluster mount, then to the copy that ships in this repository, so the
+# simulator runs on a plain checkout as well as on the deployed nodes.
+_DATA_CANDIDATES = [
+        os.environ.get("MOSTREAM_TRAINING_DATA", ""),
+        "/mnt/media/MDStream/WLGenerator/dataset/training-data-simple.txt",
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     "dataset", "training-data-simple.txt"),
+        os.path.expanduser(
+                "~/MoStream/MoStream/WLGenerator-node1/dataset/training-data-simple.txt"),
+]
+
+
+def resolve_training_data():
+        for cand in _DATA_CANDIDATES:
+                if cand and os.path.exists(cand):
+                        return cand
+        raise FileNotFoundError(
+                "training data not found; set MOSTREAM_TRAINING_DATA. Tried: "
+                + ", ".join(c for c in _DATA_CANDIDATES if c))
+
+
 def load_dataset():
-        file_path = "/mnt/media/MDStream/WLGenerator/dataset/training-data-simple.txt"
+        file_path = resolve_training_data()
         smiles_list = []
         inchi_list = []
         ip_list = []
@@ -190,7 +213,7 @@ if __name__ == "__main__":
                     _t0 = time.time()
                     try:
                           ip_train = SimulateFromSmiles(smiles_train)
-                          print(f"[oracle] {smiles_train} est_ip={est_ip} -> xtb_ip={ip_train:.4f} "
+                          print(f"{int(time.time())} [oracle] {smiles_train} est_ip={est_ip} -> xtb_ip={ip_train:.4f} "
                                 f"({time.time()-_t0:.1f}s)", flush=True)
                     except Exception as e:
                           # xTB does not converge on every structure. Drop the molecule rather

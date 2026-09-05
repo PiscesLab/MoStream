@@ -32,10 +32,13 @@ paper/*.pdf
 /*.tex
 
 # ---------------------------------------------------------------------------
-# UNPUBLISHED RESEARCH . do not push before submission.
+# UNPUBLISHED RESEARCH. Do not push before submission.
 # The paper is under (anonymous) review for WORKS 2026; the repo is public, so
 # pushing the draft would both scoop the work and risk breaking double-blind.
 # These stay on the local machine only.
 paper/
 docs/
 results/
+
+# Build dependencies, fetched by scripts/fetch_jars.sh
+jars/*.jar

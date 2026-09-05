@@ -1,0 +1,17 @@
+MoStream
+Copyright 2026 San Diego State University
+
+This product includes software developed for the ExaLearn multi-site-campaigns
+artifact (https://github.com/exalearn/multi-site-campaigns), vendored under
+MoStream/*/moldesign/. That upstream repository publishes no license, so those
+sources are not covered by the Apache License above and carry no explicit grant
+of rights. Contact the upstream authors before redistributing them.
+
+Modifications to the vendored sources: the Parsl configuration module
+(moldesign/config.py) was removed from each copy. It targeted the ALCF Theta
+scheduler, was never imported by this project, and carried a site-specific conda
+environment path.
+
+The application the vendored code implements is described in:
+  L. Ward et al., "Colmena: Scalable machine-learning-based steering of ensemble
+  simulations for high performance computing", MLHPC 2021.
