@@ -158,11 +158,13 @@ The surrogate architecture is a message-passing neural network built with
 [QCEngine](https://github.com/MolSSI/QCEngine) and
 [geomeTRIC](https://github.com/leeping/geomeTRIC).
 
+Our own contribution, the Flink pipeline under `MoStream/MDStream/StreamML/` and the
+tooling under `cloudlab/` and `scripts/`, is released under the MIT License, in `LICENSE`.
+
 The upstream multi-site-campaigns repository publishes no license, so the vendored
-`moldesign` sources carry no explicit grant of rights. Anyone intending to redistribute or
-build on this repository should contact the upstream authors first. Our own contribution,
-the Flink pipeline under `MoStream/MDStream/StreamML/` and the tooling under `cloudlab/`
-and `scripts/`, is covered by the LICENSE file at the repository root.
+`moldesign` sources carry no explicit grant of rights and are not covered by that MIT
+License. Anyone intending to redistribute or build on this repository should contact the
+upstream authors first. See `THIRD_PARTY.md` for the details.
 
 ## Notes
 
