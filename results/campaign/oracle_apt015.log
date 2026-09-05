@@ -1,0 +1,19 @@
+1784798991 [simulator] skipped Recommend backlog; consuming from the live tail
+1784798991 [simulator] real_oracle=True  n_keys=16
+1784799163 /users/NamSDSU/MoStream/MoStream/WLGenerator-node1/moldesign/simulate/functions.py:108: FutureWarning: Using the `local_options` keyword argument is depreciated in favor of using `task_config`, in version 0.30.0 it will stop working.
+1784799163   return compute_procedure(opt_input, relax_code, local_options=compute_config, raise_error=True)
+1784799205 /users/NamSDSU/MoStream/MoStream/WLGenerator-node1/moldesign/simulate/functions.py:108: FutureWarning: Using the `local_options` keyword argument is depreciated in favor of using `task_config`, in version 0.30.0 it will stop working.
+1784799205   return compute_procedure(opt_input, relax_code, local_options=compute_config, raise_error=True)
+1784799216 [oracle] Cc1ccc(-c2noc(-c3c(C)cc(C)[nH]c3=O)n2)nn1 est_ip=14.502492 -> xtb_ip=11.8812 (52.8s)
+1784799289 [03:34:49] WARNING: Omitted undefined stereo
+1784799289 
+1784799417 [oracle] CCC(=O)c1ccc(OCC(O)Cn2c(C)nc3ccccc32)cc1 est_ip=12.635708 -> xtb_ip=12.2330 (127.7s)
+1784799464 [oracle] COC(=O)c1cc(-c2cc(C)cc(N)c2OC)on1 est_ip=13.095071 -> xtb_ip=12.1831 (43.3s)
+1784799526 [oracle] Cc1nc2cc(C(=O)Nc3ccc4[nH]nc(C(N)=O)c4c3)ccc2n1C est_ip=13.841825 -> xtb_ip=11.9237 (58.7s)
+1784799589 [oracle] CC(C)(C)OC(=O)N1CC(Nc2ccncn2)C1 est_ip=14.371109 -> xtb_ip=12.3496 (59.4s)
+1784799615 [03:40:15] WARNING: Omitted undefined stereo
+1784799615 
+1784799755 [oracle] Cc1ccc(C(=O)N2CCCC(C(=O)NCc3cccnc3)C2)cc1 est_ip=14.316428 -> xtb_ip=11.8791 (140.0s)
+1784799757 [03:42:37] WARNING: Omitted undefined stereo
+1784799757 
+1784799857 [oracle] CC(NC(=O)c1c(O)cc(F)cc1F)c1ccc2c(c1)OCCCO2 est_ip=14.180639 -> xtb_ip=11.9294 (99.9s)
