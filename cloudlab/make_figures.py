@@ -37,12 +37,12 @@ OUT = 'paper/Figures'
 COL = 3.3   # single-column width, inches
 
 plt.rcParams.update({
-    'font.size': 8, 'axes.labelsize': 8, 'axes.titlesize': 8,
-    'xtick.labelsize': 7, 'ytick.labelsize': 7, 'legend.fontsize': 7,
+    'font.size': 7.5, 'axes.labelsize': 7.5, 'axes.titlesize': 7.5,
+    'xtick.labelsize': 7.5, 'ytick.labelsize': 7.5, 'legend.fontsize': 7.5,
     'font.family': 'serif', 'font.serif': ['Times New Roman', 'DejaVu Serif'],
     'axes.spines.top': False, 'axes.spines.right': False,
     'axes.edgecolor': MUTED, 'axes.labelcolor': INK, 'text.color': INK,
-    'xtick.color': INK2, 'ytick.color': INK2,
+    'xtick.color': INK, 'ytick.color': INK,
     'grid.color': MUTED, 'grid.alpha': 0.25, 'grid.linewidth': 0.5,
     'lines.linewidth': 1.4, 'legend.frameon': False,
     'figure.dpi': 200, 'savefig.bbox': 'tight', 'savefig.pad_inches': 0.02,
@@ -344,14 +344,19 @@ def fig_latency():
     fig, ax = plt.subplots(figsize=(COL, 1.7))
     ax.step([v / 1000 for v in lat], [(i + 1) / n for i in range(n)],
             where='post', color=BLUE, ls='-')
-    ax.axvline(COLMENA_MS / 1000, color=RED, ls='--', lw=1.0)
-    ax.text(COLMENA_MS / 1000, 0.5, ' Colmena\n 57 min', fontsize=6.5, color=RED, va='center')
     med = statistics.median(lat) / 1000
-    ax.text(med, 0.5, f'{med:.0f}s ', fontsize=6.5, color=BLUE, ha='right', va='center')
+    p95 = _pct(lat, 0.95) / 1000
+    ax.text(med, 0.5, f'{med:.0f}s ', fontsize=7.5, color=BLUE, ha='right', va='center')
+    # 95th-percentile marker
+    ax.axvline(p95, ymax=0.95 / 1.03, color=RED, ls='--', lw=1.0, alpha=0.85, zorder=2)
+    ax.plot([p95], [0.95], 'o', color=RED, ms=3.5, mec='white', mew=0.6, zorder=3)
+    ax.text(p95 * 1.04, 0.5, 'p95', fontsize=7.5, color=RED, ha='left', va='center')
     ax.set_xscale('log')
     ax.set_xlabel('Steering latency (s, log scale)')
     ax.set_ylabel('CDF')
     ax.set_ylim(0, 1.03)
+    ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
+    ax.set_yticklabels(['0', '0.25', '0.5', '0.75', '1'])
     ax.grid(which='both'); ax.set_axisbelow(True)
     save(fig, 'fig_latency_cdf')
 
@@ -487,6 +492,11 @@ def fig_persistence():
 # are produced per arm by cloudlab/e3_run.sh. Every reader here SKIPS cleanly if an arm is
 # absent, so these render whatever subset of {1,2,4,8,16} has been collected.
 E3_PS = (1, 2, 4, 8, 16)
+
+# Which E3 arm the utilisation panel reads. Default is results/e3 (TF's default thread
+# policy). --matched points it at results/matched/p{P}_r*, the cores-matched arm whose
+# throughput is what fig_scaling_tf plots, so the two panels describe the same runs.
+E3_REPGLOB = None
 # Compute stages carry the narrative (Rank is the window_all bottleneck); Source/Sink are
 # just the I/O endpoints of a chained vertex. Prefer the most downstream COMPUTE stage so
 # 'Infer->Rank->Sink' labels as 'Rank', not 'Sink'.
@@ -538,11 +548,17 @@ def _load_e3_arm(P):
 
     NOTE: rate_by_ts holds the ENGINE'S rate GAUGE and is kept only for diagnostics. Do not
     use it for throughput -- see _e3_throughput."""
-    path = f'results/e3/metrics_p{P}.csv'
-    if not os.path.exists(path):
+    import glob as _glob
+    if E3_REPGLOB:
+        paths = sorted(_glob.glob(E3_REPGLOB.format(P=P) + f'/metrics_p{P}.csv'))
+    else:
+        paths = [f'results/e3/metrics_p{P}.csv']
+    paths = [q for q in paths if os.path.exists(q)]
+    if not paths:
         return None
     per, rate_by_ts = {}, {}
-    with open(path) as f:
+    for path in paths:
+      with open(path) as f:
         for r in csv.DictReader(f):
             try:
                 v = float(r['value'])
@@ -755,7 +771,7 @@ def fig_utilisation():
             ax.bar(x, b, width=w * 0.92, color=BLUE)
             ax.bar(x, p, width=w * 0.92, bottom=b, color=RED, hatch='///')
             ax.bar(x, i, width=w * 0.92, bottom=b + p, color=MUTED, alpha=0.35)
-            ax.text(x, -0.055, op[0], ha='center', va='top', fontsize=5.4,
+            ax.text(x, -0.055, op[0], ha='center', va='top', fontsize=7,
                     color=INK if op == bottleneck else MUTED)
     ax.set_xticks(range(len(Ps)))
     ax.set_xticklabels([f'P={p}' for p in Ps])
@@ -768,7 +784,7 @@ def fig_utilisation():
                        Patch(facecolor=RED, hatch='///', label='backpressured'),
                        Patch(facecolor=MUTED, alpha=0.35, label='idle')],
               loc='upper left', bbox_to_anchor=(0.0, -0.16), ncol=3, handlelength=1.4,
-              labelcolor=INK2, borderpad=0.2, columnspacing=1.0)
+              labelcolor=INK, borderpad=0.2, columnspacing=1.0)
     save(fig, 'fig_utilisation')
     print(f'      bottleneck (max busy-bp) = {bottleneck}')
     for P in Ps:
@@ -783,6 +799,8 @@ FIGS = {'footprint': fig_footprint, 'memory': fig_memory, 'cost': fig_cost,
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
+    ap.add_argument('--matched', action='store_true',
+                    help='utilisation panel reads the cores-matched arm (results/matched)')
     ap.add_argument('--only', choices=list(FIGS))
     ap.add_argument('--since', metavar='"YYYY-MM-DD HH:MM:SS"',
                     help='window start. The logs are CUMULATIVE across job redeploys; pass '

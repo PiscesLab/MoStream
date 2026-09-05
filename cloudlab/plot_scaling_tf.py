@@ -22,12 +22,12 @@ import matplotlib.pyplot as plt
 BLUE, RED, INK, INK2, MUTED = '#2a78d6', '#e34948', '#0b0b0b', '#52514e', '#8a8985'
 OUT = 'paper/Figures'; COL = 3.3
 plt.rcParams.update({
-    'font.size': 8, 'axes.labelsize': 8, 'axes.titlesize': 8,
-    'xtick.labelsize': 7, 'ytick.labelsize': 7, 'legend.fontsize': 6.6,
+    'font.size': 7.5, 'axes.labelsize': 7.5, 'axes.titlesize': 7.5,
+    'xtick.labelsize': 7.5, 'ytick.labelsize': 7.5, 'legend.fontsize': 7.5,
     'font.family': 'serif', 'font.serif': ['Times New Roman', 'DejaVu Serif'],
     'axes.spines.top': False, 'axes.spines.right': False,
     'axes.edgecolor': MUTED, 'axes.labelcolor': INK, 'text.color': INK,
-    'xtick.color': INK2, 'ytick.color': INK2, 'lines.linewidth': 1.4,
+    'xtick.color': INK, 'ytick.color': INK, 'lines.linewidth': 1.4,
     'legend.frameon': False, 'figure.dpi': 200, 'savefig.bbox': 'tight', 'savefig.pad_inches': 0.02,
 })
 
@@ -59,17 +59,24 @@ ax.plot(P, med, '-o', color=BLUE, ms=5, lw=1.7, mec='white', mew=0.6,
         label='threads matched to cores', zorder=4)
 
 ax.annotate(f'{med[-1]:.0f}/s', xy=(8, med[-1]), xytext=(8, med[-1] + 45),
-            fontsize=7, color=BLUE, ha='center', va='bottom')
+            fontsize=7.5, color=BLUE, ha='center', va='bottom')
 ax.annotate(f'{medd[-1]:.0f}/s', xy=(8, medd[-1]), xytext=(8, medd[-1] - 48),
-            fontsize=7, color=RED, ha='center', va='top')
+            fontsize=7.5, color=RED, ha='center', va='top')
 
 ax.set_xscale('log', base=2); ax.set_yscale('log')
 ax.set_xticks(P); ax.set_xticklabels([str(p) for p in P])
 ax.set_yticks([50, 100, 200, 400, 800]); ax.set_yticklabels(['50', '100', '200', '400', '800'])
+# log scales add dense minor ticks (60,70,...,300,500,...) that clutter the axis; drop them so
+# only the labelled decades show, and grid on those major ticks alone.
+ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+ax.yaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+ax.grid(True, which='major', color='0.85', linewidth=0.5)
+ax.set_axisbelow(True)
 ax.set_xlabel('operator parallelism $P$')
 ax.set_ylabel('scored candidates / s')
-ax.set_xlim(0.9, 9.5); ax.set_ylim(45, 950)
-ax.legend(loc='upper left', handlelength=1.7, borderaxespad=0.3)
+ax.set_xlim(0.9, 8.8); ax.set_ylim(50, 800)   # top/bottom edges sit on the 50 and 800 gridlines
+ax.legend(loc='upper left', ncol=1, handlelength=1.7, borderaxespad=0.6,
+          fontsize=7.5, frameon=False)
 
 import os
 os.makedirs(OUT, exist_ok=True)

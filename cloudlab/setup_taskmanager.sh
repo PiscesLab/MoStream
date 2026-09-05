@@ -90,11 +90,12 @@ set_cfg() {
 
 set_cfg "jobmanager.rpc.address"                "$JM_IP"
 set_cfg "taskmanager.host"                      "$TM_IP"
-set_cfg "taskmanager.bind-host"                 "0.0.0.0"
+set_cfg "taskmanager.bind-host"                 "$TM_IP"
 set_cfg "taskmanager.numberOfTaskSlots"         "$SLOTS"
-# Pin the MetricQueryService port so monitoring has a stable target. With bind-host 0.0.0.0
-# the metrics actor binds 0.0.0.0:9998 itself and the JobManager reaches it directly -- no
-# relay needed. Nothing else may hold this port before the TM starts (see the note below).
+# Pin the MetricQueryService port so monitoring has a stable target. SECURITY: bind-host is the
+# INTERNAL $TM_IP (never 0.0.0.0) -- the metrics actor binds the 10.x address:9998, which the
+# JobManager reaches over the internal network without exposing anything to the public internet.
+# Nothing else may hold this port before the TM starts (see the note below).
 set_cfg "metrics.internal.query-service.port"   "9998"
 
 # --- Memory: the whole point of the arm flag ---

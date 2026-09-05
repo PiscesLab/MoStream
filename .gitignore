@@ -42,3 +42,9 @@ results/
 
 # Build dependencies, fetched by scripts/fetch_jars.sh
 jars/*.jar
+
+# Generated figure scratch at the repo root
+/fig_*.png
+
+# Large pretrained weight dumps (regenerate with cloudlab/pretrain_surrogate.py)
+MoStream/MDStream/StreamML/networks/pretrained_weights.json

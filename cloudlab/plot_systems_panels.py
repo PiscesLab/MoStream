@@ -19,12 +19,12 @@ import matplotlib.pyplot as plt
 BLUE, RED, INK, INK2, MUTED = '#2a78d6', '#e34948', '#0b0b0b', '#52514e', '#8a8985'
 OUT = 'paper/Figures'; COL = 3.3
 plt.rcParams.update({
-    'font.size': 8, 'axes.labelsize': 8, 'axes.titlesize': 8,
-    'xtick.labelsize': 7, 'ytick.labelsize': 7, 'legend.fontsize': 6.6,
+    'font.size': 7.5, 'axes.labelsize': 7.5, 'axes.titlesize': 7.5,
+    'xtick.labelsize': 7.5, 'ytick.labelsize': 7.5, 'legend.fontsize': 7.5,
     'font.family': 'serif', 'font.serif': ['Times New Roman', 'DejaVu Serif'],
     'axes.spines.top': False, 'axes.spines.right': False,
     'axes.edgecolor': MUTED, 'axes.labelcolor': INK, 'text.color': INK,
-    'xtick.color': INK2, 'ytick.color': INK2, 'lines.linewidth': 1.4,
+    'xtick.color': INK, 'ytick.color': INK, 'lines.linewidth': 1.4,
     'legend.frameon': False, 'figure.dpi': 200, 'savefig.bbox': 'tight', 'savefig.pad_inches': 0.02,
 })
 
@@ -47,25 +47,27 @@ def checkpoint(slope=14.3, hours=24.2, plateau=46.0):
     """
     t = np.linspace(0, hours, 100)
     fig, ax = plt.subplots(figsize=(COL, 1.85))
+    ax.grid(True, color='0.85', linewidth=0.5)
+    ax.set_axisbelow(True)
     ramp = np.minimum(1.0, t / 1.5)          # both fill their windows over the first ~1.5 h
     default = plateau * ramp + slope * t
     fixed = plateau * ramp
-    ax.plot(t, default, '--', color=RED, lw=1.4, label='default (fires without purging)')
-    ax.plot(t, fixed, '-', color=BLUE, lw=1.6, label='purge on firing')
-    end = plateau + slope * hours
-    ax.text(hours * 0.99, end * 1.02, f'{end:.0f} MB', fontsize=7, color=RED,
-            ha='right', va='bottom')
-    ax.text(hours * 0.99, plateau + 26, f'{plateau:.0f} MB', fontsize=7, color=BLUE,
-            ha='right', va='bottom')
+    ax.plot(t, default, '--', color=RED, lw=1.4, label='default (no purging)')
+    ax.plot(t, fixed, '-', color=BLUE, lw=1.6, label='with purging')
     # the gap between the two curves is Rank's accumulated state
-    xg = hours * 0.62
+    xg = hours * 0.68
     ax.annotate('', xy=(xg, plateau), xytext=(xg, plateau + slope * xg),
                 arrowprops=dict(arrowstyle='<->', color=INK2, lw=0.8))
-    ax.text(xg - 0.4, plateau + slope * xg * 0.55, '\\textit{Rank}' if False else 'Rank state',
-            fontsize=6.6, color=INK2, ha='right', va='center')
+    end = plateau + slope * hours
+    ax.text(hours * 0.99, end * 0.78, f'{end:.0f} MB', fontsize=7.5, color=RED,
+            ha='right', va='top')
+    ax.text(hours * 0.99, plateau + 26, f'{plateau:.0f} MB', fontsize=7.5, color=BLUE,
+            ha='right', va='bottom')
     ax.set_xlabel('run time (h)'); ax.set_ylabel('checkpointed state (MB)')
-    ax.set_xlim(0, hours); ax.set_ylim(0, end * 1.20)
-    ax.legend(loc='upper left', handlelength=1.5, borderaxespad=0.2)
+    ax.set_xlim(0, hours); ax.set_xticks(np.arange(0, hours + 0.1, 4))
+    ax.set_ylim(0, 400); ax.set_yticks(np.arange(0, 401, 100))
+    ax.legend(loc='upper left', ncol=1, handlelength=1.5, borderaxespad=0.6,
+              fontsize=7.5, frameon=False)
     savefig(fig, 'fig_checkpoint')
 
 
@@ -98,15 +100,18 @@ def recovery(trace='results/e4trace/trace.json'):
             sm[k] = np.mean(rate[max(0, k-2):k+3])
 
     fig, ax = plt.subplots(figsize=(COL, 1.85))
+    ax.grid(True, color='0.85', linewidth=0.5)
+    ax.set_axisbelow(True)
     ax.plot(t, sm, '-', color=BLUE, lw=1.4, zorder=2)
     ax.axvspan(kill_t, rec_t, color=RED, alpha=0.12, lw=0)
     ax.axvline(kill_t, color=RED, lw=1.1, ls='--')
-    ax.text(kill_t - 4, base*1.34, 'TM kill', color=RED, fontsize=6.3, va='top', ha='right')
+    ax.text(kill_t + 4, base*1.18, 'TM SIGKILL', color=RED, fontsize=7.5, va='top', ha='left')
     ax.annotate(f'recovered +{rec_t-kill_t:.0f}s', xy=(rec_t, base*0.45),
-                xytext=(rec_t + 12, base*1.30), fontsize=7, color=INK2,
+                xytext=(rec_t + 12, base*1.30), fontsize=7.5, color=INK2,
                 arrowprops=dict(arrowstyle='->', color=INK2, lw=0.7))
     ax.set_xlabel('time (s)'); ax.set_ylabel('recommendations / s')
-    ax.set_ylim(0, base * 1.5); ax.set_xlim(0, t.max())
+    ax.set_xlim(0, 300); ax.set_xticks(np.arange(0, 301, 50))
+    ax.set_ylim(0, 300); ax.set_yticks(np.arange(0, 301, 50))
     savefig(fig, 'fig_recovery')
     print(f"  base={base:.0f} rec/s  kill_t={kill_t}s  recovered_t={rec_t}s  downtime={round(rec_t-kill_t,1)}s")
 

@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 BLUE, RED, INK, INK2, MUTED = '#2a78d6', '#e34948', '#0b0b0b', '#52514e', '#8a8985'
 OUT = 'paper/Figures'; COL = 3.3
 plt.rcParams.update({
-    'font.size': 8, 'axes.labelsize': 8, 'axes.titlesize': 8,
-    'xtick.labelsize': 7, 'ytick.labelsize': 7, 'legend.fontsize': 6.6,
+    'font.size': 7.5, 'axes.labelsize': 7.5, 'axes.titlesize': 7.5,
+    'xtick.labelsize': 7.5, 'ytick.labelsize': 7.5, 'legend.fontsize': 7.5,
     'font.family': 'serif', 'font.serif': ['Times New Roman', 'DejaVu Serif'],
     'axes.spines.top': False, 'axes.spines.right': False,
     'axes.edgecolor': MUTED, 'axes.labelcolor': INK, 'text.color': INK,
-    'xtick.color': INK2, 'ytick.color': INK2, 'lines.linewidth': 1.4,
+    'xtick.color': INK, 'ytick.color': INK, 'lines.linewidth': 1.4,
     'legend.frameon': False, 'figure.dpi': 200, 'savefig.bbox': 'tight', 'savefig.pad_inches': 0.02,
 })
 
@@ -57,38 +57,42 @@ def main():
               f"(reps={a['n_reps']}, n={a['n_total']})")
 
     fig, ax = plt.subplots(figsize=(COL, 2.15))
-    xmax = args.mu * 1.10
-    ymax = max(p95.max(), 13) * 1.18
+    ax.grid(True, color='0.85', linewidth=0.5)
+    ax.set_axisbelow(True)
+    # snap the axis edges onto the outermost gridline (no blank margin past the last line)
+    import math
+    xmax = math.ceil(lam.max() / 0.05) * 0.05          # -> next 0.05 gridline
+    ymax = math.ceil(max(p95.max(), 13) / 5.0) * 5.0    # -> next 5 s gridline
 
     # the band the typical latency never leaves -- makes "flat" readable at a glance
     ax.axhspan(7, 10, color=BLUE, alpha=0.07, lw=0, zorder=0)
-    ax.text(xmax * 0.012, 8.5, 'typical stays\n7-10 s', fontsize=6.0, color=BLUE,
+    ax.text(xmax * 0.012, 8.5, 'median stays\n7-10 s', fontsize=7.5, color=BLUE,
             ha='left', va='center', linespacing=1.15, zorder=5)
-
-    # past the service rate the loop cannot keep up: shade it rather than draw a bare line
-    ax.axvspan(args.mu, xmax, color=RED, alpha=0.09, lw=0, zorder=0)
-    ax.axvline(args.mu, color=RED, ls=':', lw=1.1, zorder=2)
-    ax.text(args.mu, ymax * 0.99, ' cannot\n keep up', color=RED, fontsize=6.0,
-            va='top', ha='left', linespacing=1.15, zorder=5)
 
     # smooth (deterministic) reference
     if os.path.exists(args.det):
         dl, dm = det_series(args.det)
         ax.plot(dl, dm, '-s', color=MUTED, ms=3.2, lw=1.0, alpha=0.9,
-                label='steady arrivals: typical', zorder=3)
-    # bursty (Poisson), hardened with error bars
+                label='deterministic (median)', zorder=3)
+    # Poisson, hardened with error bars
     ax.plot(lam, p95, '--', color=BLUE, lw=1.0, alpha=0.65,
-            label='bursty arrivals: slowest 5%', zorder=3)
+            label='Poisson (p95)', zorder=3)
     ax.errorbar(lam, med, yerr=err, fmt='-o', color=BLUE, ms=4.5, lw=1.6, capsize=2.6,
                 elinewidth=1.0, mec='white', mew=0.6,
-                label='bursty arrivals: typical', zorder=4)
+                label='Poisson (median)', zorder=4)
 
     ax.set_xlabel(r'molecules fed in per second ($\lambda$)')
     ax.set_ylabel('steering latency (s)')
-    ax.set_xlim(0, xmax)
-    ax.set_ylim(0, ymax)
-    ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.0), ncol=2,
-              handlelength=1.6, columnspacing=1.0, borderaxespad=0.2, fontsize=6.3)
+    ax.set_xlim(0, xmax); ax.set_xticks(np.arange(0, xmax + 1e-9, 0.05))
+    ax.set_ylim(0, ymax); ax.set_yticks(np.arange(0, ymax + 1e-9, 5))
+    h, l = ax.get_legend_handles_labels()
+    # legend inside, bottom left: deterministic on row 1, the two Poisson series on row 2
+    leg1 = ax.legend([h[0]], [l[0]], loc='lower left', bbox_to_anchor=(0.01, 0.13),
+                     frameon=False, fontsize=7.5, handlelength=1.6, borderaxespad=0.3)
+    ax.add_artist(leg1)
+    ax.legend([h[2], h[1]], [l[2], l[1]], loc='lower left', bbox_to_anchor=(0.01, 0.01),
+              ncol=2, frameon=False, fontsize=7.5, handlelength=1.6,
+              columnspacing=0.8, borderaxespad=0.3)
     os.makedirs(OUT, exist_ok=True)
     for ext in ('pdf', 'png'):
         fig.savefig(f'{OUT}/{args.name}.{ext}')
