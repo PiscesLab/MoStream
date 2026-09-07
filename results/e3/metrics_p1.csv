@@ -1,0 +1,1121 @@
+ts,parallelism,vertex,subtask,metric,value
+1784194112,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,0.0
+1784194112,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194112,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194112,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194112,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194112,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194112,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,1000.0
+1784194112,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,444.0
+1784194112,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194112,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194112,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,284.0
+1784194112,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,285.0
+1784194112,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194112,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,556.0
+1784194112,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,513.0
+1784194112,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.35
+1784194112,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194112,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,22739.0
+1784194112,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,284.0
+1784194112,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194112,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,487.0
+1784194112,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194112,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,52.166666666666664
+1784194112,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194112,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,18230.0
+1784194112,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,19474.0
+1784194112,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.55
+1784194112,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194127,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194127,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194127,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194127,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194127,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194127,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194127,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194127,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,437.0
+1784194127,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194127,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194127,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,306.0
+1784194127,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,307.0
+1784194127,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194127,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,563.0
+1784194127,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,525.0
+1784194127,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194127,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194127,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,32740.0
+1784194127,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,306.0
+1784194127,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194127,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,475.0
+1784194127,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194127,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,61.333333333333336
+1784194127,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194127,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,28360.0
+1784194127,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,29616.0
+1784194127,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,61.3
+1784194127,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194142,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194142,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194142,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194142,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194142,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194142,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194142,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194142,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,455.0
+1784194142,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194142,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194142,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,308.0
+1784194142,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,309.0
+1784194142,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194142,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,545.0
+1784194142,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,546.0
+1784194142,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,50.0
+1784194142,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194142,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,33740.0
+1784194142,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,308.0
+1784194142,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194142,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,454.0
+1784194142,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194142,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,59.5
+1784194142,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194142,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,29360.0
+1784194142,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,30618.0
+1784194142,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,59.516666666666666
+1784194142,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194157,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194157,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194157,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194157,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194157,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194157,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194157,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194157,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,450.0
+1784194157,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194157,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194157,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,309.0
+1784194157,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,310.0
+1784194157,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194157,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,550.0
+1784194157,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,551.0
+1784194157,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194157,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194157,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,34740.0
+1784194157,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,309.0
+1784194157,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194157,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,449.0
+1784194157,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194157,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,60.666666666666664
+1784194157,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194157,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,30350.0
+1784194157,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,31605.0
+1784194157,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.61666666666667
+1784194157,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194172,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194172,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194172,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194172,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194172,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194172,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194172,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194172,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,488.0
+1784194172,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194172,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194172,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,311.0
+1784194172,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,312.0
+1784194172,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194172,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,512.0
+1784194172,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,648.0
+1784194172,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194172,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194172,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,35740.0
+1784194172,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,311.0
+1784194172,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194172,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,352.0
+1784194172,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194172,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,56.666666666666664
+1784194172,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194172,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,31310.0
+1784194172,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,32565.0
+1784194172,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,56.583333333333336
+1784194172,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194187,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194187,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194187,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194187,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194187,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194187,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194187,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194187,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,444.0
+1784194187,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194187,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194187,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,313.0
+1784194187,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,314.0
+1784194187,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194187,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,556.0
+1784194187,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,601.0
+1784194187,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194187,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194187,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,36740.0
+1784194187,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,313.0
+1784194187,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194187,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,399.0
+1784194187,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194187,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,61.166666666666664
+1784194187,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194187,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,32180.0
+1784194187,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,33439.0
+1784194187,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,61.13333333333333
+1784194187,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194202,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194202,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194202,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194202,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194202,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194202,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194202,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194202,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,407.0
+1784194202,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194202,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194202,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,315.0
+1784194202,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,316.0
+1784194202,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194202,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,593.0
+1784194202,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,547.0
+1784194202,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194202,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194202,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,37740.0
+1784194202,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,315.0
+1784194202,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194202,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,453.0
+1784194202,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194202,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,64.16666666666667
+1784194202,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194202,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,33120.0
+1784194202,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,34371.0
+1784194202,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,64.21666666666667
+1784194202,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194217,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194217,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194217,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194217,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194217,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194217,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194217,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194217,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,424.0
+1784194217,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194217,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194217,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,317.0
+1784194217,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,318.0
+1784194217,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194217,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,576.0
+1784194217,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,586.0
+1784194217,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194217,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194217,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,38240.0
+1784194217,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,317.0
+1784194217,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194217,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,414.0
+1784194217,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194217,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,63.166666666666664
+1784194217,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194217,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,34100.0
+1784194217,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,35358.0
+1784194217,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,63.11666666666667
+1784194217,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194232,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194232,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194232,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194232,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194232,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194232,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194232,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194232,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,422.0
+1784194232,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194232,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194232,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,319.0
+1784194232,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,320.0
+1784194232,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194232,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,578.0
+1784194232,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,511.0
+1784194232,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194232,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194232,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,39240.0
+1784194232,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,319.0
+1784194232,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194232,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,489.0
+1784194232,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194232,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,64.16666666666667
+1784194232,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194232,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,34950.0
+1784194232,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,36210.0
+1784194232,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,64.16666666666667
+1784194232,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194247,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,0.0
+1784194247,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194247,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194247,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194247,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194247,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194247,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,1000.0
+1784194247,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,472.0
+1784194247,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194247,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194247,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,322.0
+1784194247,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,323.0
+1784194247,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194247,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,528.0
+1784194247,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,584.0
+1784194247,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194247,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194247,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,41240.0
+1784194247,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,322.0
+1784194247,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194247,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,416.0
+1784194247,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194247,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,60.0
+1784194247,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194247,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,36730.0
+1784194247,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,37988.0
+1784194247,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.0
+1784194247,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194262,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,0.0
+1784194262,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194262,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194262,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194262,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194262,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194262,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,1000.0
+1784194262,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,426.0
+1784194262,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194262,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194262,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,324.0
+1784194262,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,325.0
+1784194262,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194262,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,574.0
+1784194262,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,544.0
+1784194262,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194262,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194262,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,42240.0
+1784194262,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,324.0
+1784194262,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194262,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,456.0
+1784194262,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194262,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,63.333333333333336
+1784194262,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194262,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,37400.0
+1784194262,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,38654.0
+1784194262,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,63.38333333333333
+1784194262,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194277,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,0.0
+1784194277,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194277,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194277,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194277,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194277,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194277,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,1000.0
+1784194277,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,426.0
+1784194277,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194277,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194277,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,324.0
+1784194277,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,325.0
+1784194277,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194277,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,574.0
+1784194277,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,544.0
+1784194277,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194277,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194277,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,42240.0
+1784194277,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,324.0
+1784194277,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194277,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,456.0
+1784194277,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194277,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,63.333333333333336
+1784194277,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194277,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,37400.0
+1784194277,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,38654.0
+1784194277,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,63.38333333333333
+1784194277,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194292,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194292,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194292,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194292,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194292,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194292,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194292,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194292,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,443.0
+1784194292,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194292,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194292,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,326.0
+1784194292,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,327.0
+1784194292,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194292,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,557.0
+1784194292,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,554.0
+1784194292,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194292,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194292,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,43240.0
+1784194292,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,326.0
+1784194292,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194292,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,446.0
+1784194292,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194292,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,63.5
+1784194292,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194292,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,38790.0
+1784194292,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,40048.0
+1784194292,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,63.56666666666667
+1784194292,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194307,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194307,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194307,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194307,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194307,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194307,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194307,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194307,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,465.0
+1784194307,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194307,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194307,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,328.0
+1784194307,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,329.0
+1784194307,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194307,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,535.0
+1784194307,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,590.0
+1784194307,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194307,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194307,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,44240.0
+1784194307,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,328.0
+1784194307,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194307,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,410.0
+1784194307,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194307,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,60.166666666666664
+1784194307,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194307,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,39680.0
+1784194307,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,40932.0
+1784194307,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.083333333333336
+1784194307,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194322,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,0.0
+1784194322,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194322,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194322,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194322,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194322,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194322,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,1000.0
+1784194322,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,436.0
+1784194322,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194322,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194322,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,330.0
+1784194322,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,331.0
+1784194322,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194322,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,564.0
+1784194322,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,496.0
+1784194322,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194322,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194322,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,45240.0
+1784194322,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,330.0
+1784194322,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194322,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,504.0
+1784194322,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194322,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,62.833333333333336
+1784194322,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194322,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,40480.0
+1784194322,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,41734.0
+1784194322,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,62.75
+1784194322,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194337,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194337,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194337,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194337,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194337,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194337,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194337,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194337,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,429.0
+1784194337,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194337,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194337,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,332.0
+1784194337,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,333.0
+1784194337,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194337,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,571.0
+1784194337,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,493.0
+1784194337,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194337,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194337,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,45740.0
+1784194337,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,332.0
+1784194337,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194337,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,507.0
+1784194337,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194337,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,61.833333333333336
+1784194337,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194337,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,41500.0
+1784194337,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,42757.0
+1784194337,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,61.93333333333333
+1784194337,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194352,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,0.0
+1784194352,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194352,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194352,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194352,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194352,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194352,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,1000.0
+1784194352,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,469.0
+1784194352,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194352,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194352,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,333.0
+1784194352,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,334.0
+1784194352,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194352,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,531.0
+1784194352,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,553.0
+1784194352,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194352,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194352,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,46740.0
+1784194352,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,333.0
+1784194352,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194352,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,447.0
+1784194352,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194352,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,57.166666666666664
+1784194352,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194352,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,42400.0
+1784194352,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,43660.0
+1784194352,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,57.083333333333336
+1784194352,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194367,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194367,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194367,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194367,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194367,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194367,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194367,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194367,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,430.0
+1784194367,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194367,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194367,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,335.0
+1784194367,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,336.0
+1784194367,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194367,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,570.0
+1784194367,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,472.0
+1784194367,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194367,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194367,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,47740.0
+1784194367,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,335.0
+1784194367,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194367,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,528.0
+1784194367,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194367,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,60.666666666666664
+1784194367,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194367,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,42990.0
+1784194367,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,44421.0
+1784194367,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.666666666666664
+1784194367,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194382,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194382,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194382,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194382,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194382,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194382,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194382,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194382,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,431.0
+1784194382,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.1
+1784194382,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194382,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,337.0
+1784194382,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,338.0
+1784194382,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.1
+1784194382,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,569.0
+1784194382,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,538.0
+1784194382,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194382,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194382,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,48740.0
+1784194382,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,337.0
+1784194382,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.1
+1784194382,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,462.0
+1784194382,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194382,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,51.166666666666664
+1784194382,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194382,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,43560.0
+1784194382,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,45319.0
+1784194382,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,59.6
+1784194382,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194397,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194397,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194397,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194397,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194397,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194397,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194397,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194397,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,433.0
+1784194397,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194397,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194397,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,339.0
+1784194397,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,340.0
+1784194397,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194397,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,567.0
+1784194397,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,533.0
+1784194397,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194397,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194397,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,49240.0
+1784194397,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,339.0
+1784194397,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194397,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,467.0
+1784194397,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194397,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,50.333333333333336
+1784194397,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194397,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,44520.0
+1784194397,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,46279.0
+1784194397,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,58.53333333333333
+1784194397,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194412,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194412,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194412,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194412,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194412,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194412,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194412,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194412,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,441.0
+1784194412,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194412,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194412,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,341.0
+1784194412,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,342.0
+1784194412,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194412,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,559.0
+1784194412,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,509.0
+1784194412,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,50.0
+1784194412,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194412,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,50240.0
+1784194412,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,341.0
+1784194412,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194412,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,491.0
+1784194412,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194412,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,49.166666666666664
+1784194412,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194412,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,45260.0
+1784194412,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,47018.0
+1784194412,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,57.6
+1784194412,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194427,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194427,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194427,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194427,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194427,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194427,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194427,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194427,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,432.0
+1784194427,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194427,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194427,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,342.0
+1784194427,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,343.0
+1784194427,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194427,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,568.0
+1784194427,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,455.0
+1784194427,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194427,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194427,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,51240.0
+1784194427,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,342.0
+1784194427,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.1
+1784194427,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,545.0
+1784194427,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194427,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,50.833333333333336
+1784194427,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194427,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,46100.0
+1784194427,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,47857.0
+1784194427,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,59.2
+1784194427,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194442,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194442,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194442,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194442,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194442,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194442,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194442,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194442,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,459.0
+1784194442,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194442,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194442,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,346.0
+1784194442,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,347.0
+1784194442,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194442,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,541.0
+1784194442,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,477.0
+1784194442,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194442,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194442,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,52740.0
+1784194442,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,346.0
+1784194442,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194442,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,523.0
+1784194442,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194442,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,56.833333333333336
+1784194442,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194442,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,47800.0
+1784194442,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,49556.0
+1784194442,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,56.93333333333333
+1784194442,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194457,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194457,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194457,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194457,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194457,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194457,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194457,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194457,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,459.0
+1784194457,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194457,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194457,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,346.0
+1784194457,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,347.0
+1784194457,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194457,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,541.0
+1784194457,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,477.0
+1784194457,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194457,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194457,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,52740.0
+1784194457,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,346.0
+1784194457,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194457,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,523.0
+1784194457,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194457,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,56.833333333333336
+1784194457,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194457,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,47800.0
+1784194457,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,49556.0
+1784194457,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,56.93333333333333
+1784194457,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194472,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194472,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194472,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194472,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194472,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194472,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194472,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194472,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,429.0
+1784194472,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.1
+1784194472,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194472,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,347.0
+1784194472,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,348.0
+1784194472,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.1
+1784194472,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,571.0
+1784194472,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,449.0
+1784194472,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194472,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194472,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,53740.0
+1784194472,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,347.0
+1784194472,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.1
+1784194472,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,551.0
+1784194472,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194472,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,59.5
+1784194472,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194472,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,49670.0
+1784194472,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,51426.0
+1784194472,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,59.43333333333333
+1784194472,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194487,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,0.0
+1784194487,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194487,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194487,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194487,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194487,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194487,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,1000.0
+1784194487,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,448.0
+1784194487,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194487,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194487,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,350.0
+1784194487,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,351.0
+1784194487,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194487,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,552.0
+1784194487,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,484.0
+1784194487,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194487,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194487,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,54740.0
+1784194487,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,349.0
+1784194487,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194487,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,516.0
+1784194487,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194487,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,59.5
+1784194487,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194487,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,49670.0
+1784194487,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,51426.0
+1784194487,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,59.43333333333333
+1784194487,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194502,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,0.0
+1784194502,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194502,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194502,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194502,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194502,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194502,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,1000.0
+1784194502,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,453.0
+1784194502,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194502,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194502,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,351.0
+1784194502,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,352.0
+1784194502,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194502,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,547.0
+1784194502,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,461.0
+1784194502,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194502,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194502,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,55740.0
+1784194502,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,351.0
+1784194502,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194502,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,539.0
+1784194502,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194502,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,61.5
+1784194502,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194502,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,50640.0
+1784194502,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,52394.0
+1784194502,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,61.35
+1784194502,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194517,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,0.0
+1784194517,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194517,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194517,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194517,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194517,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194517,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,1000.0
+1784194517,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,477.0
+1784194517,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194517,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194517,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,353.0
+1784194517,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,354.0
+1784194517,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194517,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,523.0
+1784194517,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,494.0
+1784194517,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194517,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194517,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,56740.0
+1784194517,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,353.0
+1784194517,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194517,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,506.0
+1784194517,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194517,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,62.333333333333336
+1784194517,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194517,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,51560.0
+1784194517,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,53313.0
+1784194517,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,62.21666666666667
+1784194517,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194532,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194532,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194532,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194532,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194532,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194532,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194532,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194532,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,488.0
+1784194532,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194532,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194532,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,355.0
+1784194532,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,356.0
+1784194532,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194532,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,512.0
+1784194532,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,552.0
+1784194532,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194532,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194532,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,57740.0
+1784194532,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,355.0
+1784194532,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194532,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,448.0
+1784194532,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194532,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,60.333333333333336
+1784194532,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194532,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,52500.0
+1784194532,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,54259.0
+1784194532,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.38333333333333
+1784194532,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194547,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194547,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194547,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194547,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194547,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194547,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194547,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194547,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,448.0
+1784194547,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194547,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194547,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,357.0
+1784194547,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,358.0
+1784194547,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194547,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,552.0
+1784194547,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,521.0
+1784194547,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194547,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194547,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,58240.0
+1784194547,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,357.0
+1784194547,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194547,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,479.0
+1784194547,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194547,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,63.666666666666664
+1784194547,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194547,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,53490.0
+1784194547,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,55242.0
+1784194547,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,63.6
+1784194547,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194562,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194562,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194562,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194562,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194562,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194562,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194562,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194562,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,466.0
+1784194562,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194562,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194562,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,359.0
+1784194562,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,360.0
+1784194562,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194562,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,534.0
+1784194562,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,544.0
+1784194562,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194562,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194562,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,59240.0
+1784194562,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,359.0
+1784194562,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194562,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,456.0
+1784194562,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194562,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,60.5
+1784194562,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194562,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,54270.0
+1784194562,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,56021.0
+1784194562,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.5
+1784194562,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194577,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194577,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194577,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194577,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194577,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194577,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194577,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194577,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,441.0
+1784194577,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194577,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194577,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,360.0
+1784194577,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,361.0
+1784194577,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194577,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,559.0
+1784194577,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,507.0
+1784194577,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194577,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194577,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,60240.0
+1784194577,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,360.0
+1784194577,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194577,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,493.0
+1784194577,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194577,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,60.5
+1784194577,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194577,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,55200.0
+1784194577,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,56952.0
+1784194577,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.56666666666667
+1784194577,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194592,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194592,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194592,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194592,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194592,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194592,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194592,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194592,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,431.0
+1784194592,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194592,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194592,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,362.0
+1784194592,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,363.0
+1784194592,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194592,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,569.0
+1784194592,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,499.0
+1784194592,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,50.0
+1784194592,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194592,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,60740.0
+1784194592,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,362.0
+1784194592,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194592,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,501.0
+1784194592,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194592,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,60.5
+1784194592,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194592,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,56130.0
+1784194592,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,57890.0
+1784194592,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.6
+1784194592,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194607,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194607,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194607,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194607,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194607,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194607,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194607,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194607,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,451.0
+1784194607,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194607,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194607,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,364.0
+1784194607,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,365.0
+1784194607,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194607,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,549.0
+1784194607,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,559.0
+1784194607,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194607,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194607,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,62240.0
+1784194607,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,364.0
+1784194607,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194607,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,441.0
+1784194607,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194607,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,58.5
+1784194607,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194607,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,57010.0
+1784194607,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,58765.0
+1784194607,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,58.583333333333336
+1784194607,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194622,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194622,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194622,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194622,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194622,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194622,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194622,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194622,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,440.0
+1784194622,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194622,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194622,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,366.0
+1784194622,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,367.0
+1784194622,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194622,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,560.0
+1784194622,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,540.0
+1784194622,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194622,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194622,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,62740.0
+1784194622,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,366.0
+1784194622,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194622,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,460.0
+1784194622,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194622,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,61.666666666666664
+1784194622,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194622,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,57970.0
+1784194622,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,59728.0
+1784194622,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,61.78333333333333
+1784194622,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194637,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194637,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194637,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194637,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194637,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194637,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194637,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194637,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,439.0
+1784194637,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194637,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194637,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,368.0
+1784194637,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,369.0
+1784194637,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194637,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,561.0
+1784194637,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,523.0
+1784194637,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194637,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194637,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,63740.0
+1784194637,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,368.0
+1784194637,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194637,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,477.0
+1784194637,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194637,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,63.333333333333336
+1784194637,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194637,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,58990.0
+1784194637,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,60746.0
+1784194637,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,63.35
+1784194637,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194652,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194652,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194652,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194652,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194652,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194652,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194652,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194652,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,494.0
+1784194652,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.13333333333333333
+1784194652,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194652,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,370.0
+1784194652,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,371.0
+1784194652,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194652,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,506.0
+1784194652,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,514.0
+1784194652,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,66.66666666666667
+1784194652,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194652,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,64740.0
+1784194652,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,370.0
+1784194652,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.13333333333333333
+1784194652,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,486.0
+1784194652,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194652,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,62.5
+1784194652,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194652,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,59880.0
+1784194652,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,61636.0
+1784194652,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,62.43333333333333
+1784194652,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194667,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194667,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194667,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194667,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194667,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194667,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194667,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194667,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,474.0
+1784194667,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194667,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194667,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,371.0
+1784194667,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,372.0
+1784194667,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194667,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,526.0
+1784194667,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,464.0
+1784194667,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194667,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194667,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,65740.0
+1784194667,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,371.0
+1784194667,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194667,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,536.0
+1784194667,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194667,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,64.0
+1784194667,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194667,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,60860.0
+1784194667,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,62611.0
+1784194667,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,64.0
+1784194667,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194682,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194682,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194682,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194682,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194682,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194682,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194682,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194682,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,444.0
+1784194682,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194682,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194682,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,375.0
+1784194682,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,376.0
+1784194682,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194682,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,556.0
+1784194682,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,487.0
+1784194682,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,58.333333333333336
+1784194682,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194682,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,67240.0
+1784194682,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,375.0
+1784194682,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194682,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,513.0
+1784194682,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194682,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,57.166666666666664
+1784194682,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194682,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,61990.0
+1784194682,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,64195.0
+1784194682,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,62.71666666666667
+1784194682,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
+1784194697,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,busyTimeMsPerSecond,1.0
+1784194697,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.0
+1784194697,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194697,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsOut,3461.0
+1784194697,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsIn,3461.0
+1784194697,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.0
+1784194697,1,"Source: Source-data -> LoadJSON, Parse, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,999.0
+1784194697,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,busyTimeMsPerSecond,416.0
+1784194697,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOutPerSecond,0.11666666666666667
+1784194697,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194697,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsOut,376.0
+1784194697,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsIn,377.0
+1784194697,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194697,1,"KEYED PROCESS, Parse->Train, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,584.0
+1784194697,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,busyTimeMsPerSecond,518.0
+1784194697,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOutPerSecond,50.0
+1784194697,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,idleTimeMsPerSecond,0.0
+1784194697,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsOut,68240.0
+1784194697,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsIn,376.0
+1784194697,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,numRecordsInPerSecond,0.11666666666666667
+1784194697,1,"KEYED PROCESS, Train->Infer, _stream_key_by_map_operator",0,backPressuredTimeMsPerSecond,482.0
+1784194697,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,busyTimeMsPerSecond,1000.0
+1784194697,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOutPerSecond,51.833333333333336
+1784194697,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,idleTimeMsPerSecond,0.0
+1784194697,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsOut,62710.0
+1784194697,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsIn,64965.0
+1784194697,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,numRecordsInPerSecond,60.233333333333334
+1784194697,1,"Infer->Rank, Rank->Filter, Filter -> Sink: Writer -> Sink: Committer",0,backPressuredTimeMsPerSecond,0.0
