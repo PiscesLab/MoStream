@@ -1,0 +1,9 @@
+# Colmena baseline environment. Keep this SEPARATE from the PyFlink environment:
+# colmena requires cloudpickle>=3 through proxystore, while apache-beam inside
+# PyFlink requires cloudpickle~=2.2.1. Installing both in one env breaks PyFlink.
+#
+#   conda create -n colmena-base python=3.9
+#   conda activate colmena-base
+#   pip install -r cloudlab/colmena_baseline/requirements-colmena.txt
+#   pip install -r requirements.txt   # chemistry and model stack, on a simulation node
+colmena==0.7.2
