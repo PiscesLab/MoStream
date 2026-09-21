@@ -29,6 +29,22 @@ MODEL_COUNT="${MODEL_COUNT:-8}"      # upstream's ensemble size; see README on t
 NUM_EPOCHS="${NUM_EPOCHS:-128}"
 RETRAIN_FREQ="${RETRAIN_FREQ:-1}"
 REDIS_PORT="${REDIS_PORT:-6379}"
+# Molecules scored per inference task. Upstream scores the WHOLE search space each
+# round, split into tasks of this size; that global rescore is the cost the streaming
+# arm avoids, so leave it at upstream's value when measuring.
+ML_TASK_SIZE="${ML_TASK_SIZE:-50000}"
+
+# Threads per xTB call. Upstream sizes this for a 64-core Theta node. For a fair
+# comparison it must match the streaming arm's per-simulation allocation, and the
+# product QC_WORKERS x XTB_CORES must not exceed the cores available, or the xTB
+# processes oversubscribe the machine and every simulation slows down.
+XTB_CORES="${XTB_CORES:-16}"
+export COLMENA_QC_WORKERS="$QC_WORKERS" COLMENA_ML_WORKERS="${ML_WORKERS:-1}" COLMENA_XTB_CORES="$XTB_CORES"
+
+total=$(( QC_WORKERS * XTB_CORES ))
+if (( total > $(nproc) )); then
+  echo "warning: $QC_WORKERS workers x $XTB_CORES threads = $total, but this host has $(nproc) cores" >&2
+fi
 
 for f in "$SEARCH_SPACE" "$TRAINING_SET" "$MPNN_MODEL"; do
   [[ -f "$f" ]] || { echo "missing input: $f" >&2; exit 1; }
@@ -51,6 +67,7 @@ echo "==> running Colmena campaign, budget $SEARCH_SIZE, $QC_WORKERS workers"
 python run.py \
   --use-parsl \
   --no-proxystore \
+  --ps-file-dir proxy-store-scratch \
   --redisport "$REDIS_PORT" \
   --qc-specification xtb \
   --mpnn-model-path "$MPNN_MODEL" \
@@ -61,6 +78,7 @@ python run.py \
   --retrain-frequency "$RETRAIN_FREQ" \
   --search-size "$SEARCH_SIZE" \
   --num-qc-workers "$QC_WORKERS" \
+  --molecules-per-ml-task "$ML_TASK_SIZE" \
   2>&1 | tee "$OUT_DIR/run.log"
 
 echo

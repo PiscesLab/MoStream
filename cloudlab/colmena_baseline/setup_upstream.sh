@@ -31,16 +31,33 @@ echo "==> creating conda env '$ENV_NAME'"
 # funcx_endpoint, which --use-parsl makes unnecessary.
 conda create -y -n "$ENV_NAME" -c conda-forge python=3.9 \
   redis-server rdkit=2022.09.4 qcengine=0.23.0 geometric=0.9 xtb-python \
-  openbabel=3.1 'pyyaml<6' 'py-cpuinfo<6' msgpack-python=1 psutil tqdm 'pandas==1.*'
+  'pyyaml<6' 'py-cpuinfo<6' 'msgpack-python=1' psutil tqdm 'pandas==1.*'
 
 # shellcheck disable=SC1091
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate "$ENV_NAME"
 
-pip install 'colmena==0.4.*' 'parsl==2023.2.27' 'tensorflow-cpu==2.8' \
-            'ase==3.22.1' python-git-info flatten-dict redis
+# Pins found by building this environment, none of which their environment.yml
+# states. qcengine 0.23 and the vendored moldesign models are written for pydantic
+# v1, and conda-forge now resolves pydantic v2, which fails at import with
+# "AttributeError: __pydantic_private__". qcelemental has to move back with it.
+conda install -y -c conda-forge 'pydantic<2' 'qcelemental<0.26'
+
+# colmena 0.4 brings proxystore 0.4, the last release with the store module layout
+# run.py imports at module level (proxystore.store.redis and friends).
+pip install 'colmena==0.4.*' 'parsl==2023.2.27' 'tensorflow-cpu==2.8.*' \
+            'ase==3.22.1' python-git-info flatten-dict 'redis<5' 'protobuf<3.20'
 pip install 'git+https://github.com/exalearn/nfp.git@gc_updates'
 pip install -e "$UPSTREAM_DIR/molecular-design"
+
+echo "==> patching upstream to run off ALCF"
+# Their --use-parsl path targets the decommissioned Theta machine. The patch adds a
+# local executor config with the same labels and nothing else; see patch_upstream.py.
+python "$(dirname "${BASH_SOURCE[0]}")/patch_upstream.py" "$UPSTREAM_DIR/molecular-design"
+
+echo "==> sanity check"
+python -c "import qcengine; assert 'xtb' in qcengine.list_available_programs(), 'xtb not visible to qcengine'; print('    xtb visible to qcengine')"
+( cd "$UPSTREAM_DIR/molecular-design" && python run.py --help >/dev/null ) && echo "    run.py loads"
 
 echo
 echo "==> done"
