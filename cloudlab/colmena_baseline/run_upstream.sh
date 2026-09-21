@@ -18,16 +18,33 @@ OUT_DIR="${OUT_DIR:-$REPO_ROOT/results/colmena}"
 # The three inputs, all shared with the streaming arm. MOS-search.csv and
 # training-data.json are the gitignored files from the data download; see the
 # repository README.
-SEARCH_SPACE="${SEARCH_SPACE:-$REPO_ROOT/MoStream/MDStream/WLGenerator/search_space/MOS-search.csv}"
-TRAINING_SET="${TRAINING_SET:-$REPO_ROOT/MoStream/MDStream/WLGenerator/dataset/training-data.json}"
+# First match wins: the repo checkout, a local copy, then the shared data drive. Copy
+# off a network mount before running; pandas reads the 1.5 GB search space at startup.
+first_existing() { for f in "$@"; do [[ -f "$f" ]] && { echo "$f"; return; }; done; echo "$1"; }
+DATA_MNT="${DATA_MNT:-/mnt/n/Applications/MoStreamData/MoStream/MoStream/MDStream/WLGenerator}"
+SEARCH_SPACE="${SEARCH_SPACE:-$(first_existing \
+  "$REPO_ROOT/MoStream/MDStream/WLGenerator/search_space/MOS-search.csv" \
+  "$HOME/colmena-data/MOS-search.csv" \
+  "$DATA_MNT/search_space/MOS-search.csv")}"
+TRAINING_SET="${TRAINING_SET:-$(first_existing \
+  "$REPO_ROOT/MoStream/MDStream/WLGenerator/dataset/training-data.json" \
+  "$HOME/colmena-data/training-data.json" \
+  "$DATA_MNT/dataset/training-data.json")}"
 MPNN_MODEL="${MPNN_MODEL:-$REPO_ROOT/MoStream/MDStream/StreamML/networks/model.h5}"
 
 # Campaign parameters. SEARCH_SIZE is the shared compute budget.
-SEARCH_SIZE="${SEARCH_SIZE:-512}"
+SEARCH_SIZE="${SEARCH_SIZE:-5000}"
 QC_WORKERS="${QC_WORKERS:-3}"        # one per simulation node, as the streaming arm has
-MODEL_COUNT="${MODEL_COUNT:-8}"      # upstream's ensemble size; see README on this
+# Ensemble size. Upstream's default is 8, but on a 16-core host each model costs
+# 23-42 min to train and ~35 min to score the search space, and with one ML worker
+# they run serially: eight would not submit a first simulation for 7.6-10.3 h, past a
+# 6 h window. One model is what fits, and it matches the streaming arm's single model.
+MODEL_COUNT="${MODEL_COUNT:-1}"
 NUM_EPOCHS="${NUM_EPOCHS:-128}"
 RETRAIN_FREQ="${RETRAIN_FREQ:-1}"
+# Wall-clock window. The discovery curve is hits against time, so every arm gets the
+# same window on the same host. SEARCH_SIZE is set high so it is not the limiter.
+WINDOW_H="${WINDOW_H:-6}"
 REDIS_PORT="${REDIS_PORT:-6379}"
 # Molecules scored per inference task. Upstream scores the WHOLE search space each
 # round, split into tasks of this size; that global rescore is the cost the streaming
@@ -38,7 +55,7 @@ ML_TASK_SIZE="${ML_TASK_SIZE:-50000}"
 # comparison it must match the streaming arm's per-simulation allocation, and the
 # product QC_WORKERS x XTB_CORES must not exceed the cores available, or the xTB
 # processes oversubscribe the machine and every simulation slows down.
-XTB_CORES="${XTB_CORES:-16}"
+XTB_CORES="${XTB_CORES:-4}"
 export COLMENA_QC_WORKERS="$QC_WORKERS" COLMENA_ML_WORKERS="${ML_WORKERS:-1}" COLMENA_XTB_CORES="$XTB_CORES"
 
 total=$(( QC_WORKERS * XTB_CORES ))
@@ -64,9 +81,14 @@ fi
 
 cd "$UPSTREAM_DIR/molecular-design"
 echo "==> running Colmena campaign, budget $SEARCH_SIZE, $QC_WORKERS workers"
+# ProxyStore on, with upstream's own backends from run-xtb-lambda-parsl.sh.
+# --no-proxystore is their ablation, and it runs out of memory at this scale: it ships
+# each 50k-molecule chunk as a ~58 MB message with ~20 in flight, 4-5 GB per round.
+timeout --signal=INT --kill-after=120 "$(( WINDOW_H * 3600 ))" \
 python run.py \
   --use-parsl \
-  --no-proxystore \
+  --infer-ps-backend redis --train-ps-backend redis --simulate-ps-backend file \
+  --ps-threshold 10000 \
   --ps-file-dir proxy-store-scratch \
   --redisport "$REDIS_PORT" \
   --qc-specification xtb \
@@ -79,9 +101,11 @@ python run.py \
   --search-size "$SEARCH_SIZE" \
   --num-qc-workers "$QC_WORKERS" \
   --molecules-per-ml-task "$ML_TASK_SIZE" \
-  2>&1 | tee "$OUT_DIR/run.log"
+  2>&1 | tee "$OUT_DIR/run.log" || true
 
 echo
 echo "==> campaign finished. Upstream writes a runs/ directory next to run.py."
-echo "    Convert its results into the discovery curve with:"
-echo "      python cloudlab/colmena_baseline/make_curve.py --upstream <runs/dir> --out results/campaign/colmena.csv"
+RUN_DIR="$(ls -td "$UPSTREAM_DIR"/molecular-design/runs/*/ | head -1)"
+echo "    run dir: $RUN_DIR"
+python "$REPO_ROOT/cloudlab/colmena_baseline/make_curve.py" \
+  --upstream "$RUN_DIR" --window-h "$WINDOW_H" --out "$REPO_ROOT/results/campaign/colmena.csv"

@@ -14,9 +14,12 @@ oracle. Running it directly removes any argument about whether our version of th
 design is faithful.
 
 ```bash
-./cloudlab/colmena_baseline/setup_upstream.sh    # clone at a pinned commit, build its env
-./cloudlab/colmena_baseline/run_upstream.sh      # run the campaign against our data
+./cloudlab/colmena_baseline/setup_upstream.sh    # clone at a pinned commit, build and patch
+./cloudlab/colmena_baseline/run_upstream.sh      # 6 h campaign, then writes the curve
 ```
+
+`run_upstream.sh` stops the campaign at the end of the window and writes
+`results/campaign/colmena.csv` itself, measured from launch.
 
 `setup_upstream.sh` clones `exalearn/multi-site-campaigns` at commit `59b1456` into
 `~/colmena-upstream` and builds a conda environment from their `environment.yml`,
@@ -40,23 +43,55 @@ arm. Override any of them with the matching environment variable.
 The first two are the gitignored data files from the download linked in the repository
 README. They are the same files upstream's own launch script uses.
 
-### One decision you have to make
+### Ensemble size
 
-Upstream defaults to `--model-count 8`, an eight-model ensemble, and ranks by an upper
-confidence bound over its spread. The streaming arm runs a single model, so its
-standard deviation is zero and the same formula reduces to picking the highest
-prediction.
+Upstream defaults to `--model-count 8`, an eight-model ensemble ranked by an upper
+confidence bound over its spread. The measured run uses one model, for a reason of
+feasibility rather than preference. On a 16-core host each model costs 23 to 42 minutes
+to train and about 35 minutes to score the search space, and with one ML worker they
+run in sequence, so eight models would not submit a first simulation for 7.6 to 10.3
+hours, past a 6-hour window. One model also matches the streaming arm, whose single
+model makes the same formula reduce to taking the highest prediction.
 
-That is a real difference in the acquisition policy, not just in scheduling, and it
-cuts both ways:
+### Memory
 
-- `MODEL_COUNT=8` is Colmena as published. The comparison then covers the whole design,
-  and the baseline gets a better acquisition function than ours.
-- `MODEL_COUNT=1` isolates the scheduling difference alone, which is the paper's actual
-  claim, at the cost of not being the configuration their paper reports.
+A full-scale run does not fit on a 15 GB host as upstream wrote it. `patch_upstream.py`
+applies three memory-only fixes, each found by a run that had to be stopped before the
+kernel killed it, and each verified to leave predictions bit-identical:
 
-Running both is the strongest answer, and it is cheap relative to the oracle time.
-Whichever you report, say which one it was.
+| Problem | Fix |
+| --- | --- |
+| Parsing 1.1M molecule graphs into Python lists needs about 12.7 GB | store them as small integer arrays, about 3.5 GB |
+| The ML worker keeps about 190 MB per scoring call and never frees it | clear Keras state at the start of each call |
+| TensorFlow spreads allocations over dozens of malloc arenas never trimmed | cap the ML worker at 2 arenas |
+
+`run_upstream.sh` also runs with ProxyStore on, using the backends from upstream's own
+`run-xtb-lambda-parsl.sh`. `--no-proxystore` is their ablation, and at this scale it
+ships each 50,000-molecule chunk as a message of about 58 MB with twenty in flight.
+
+### Measured result
+
+Six hours on a 16-core host, 3 xTB workers at 4 threads each, one model:
+
+| Hours from launch | Simulated | Above 14 V |
+| --- | --- | --- |
+| 1 | 0 | 0 |
+| 2 | 23 | 19 |
+| 3 | 43 | 34 |
+| 4 | 62 | 48 |
+| 5 | 77 | 57 |
+| 6 | 94 | 63 |
+
+The first simulation was submitted 58.2 minutes after launch, spent training and then
+scoring all 1.1 million candidates, and the first result landed at 1.01 hours. Only two
+ranking refreshes fit in the window, because each one retrains and rescores the whole
+space while sharing the CPU with xTB.
+
+Two things any comparison must reproduce exactly. TensorFlow's thread pool was not
+capped, so during training and scoring the ML worker used about 9 cores alongside the
+12 xTB threads, and xTB averaged 9.45 minutes per molecule under that contention. The
+streaming arm has to run on the same host under the same caps, one after the other and
+never concurrently, or the curves measure the machine rather than the two designs.
 
 ## 2. Local harness, the fallback
 

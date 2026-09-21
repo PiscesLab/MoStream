@@ -13,6 +13,17 @@ the smallest change that fixes it, and nothing else:
   3. run_simulation's thread count reads COLMENA_XTB_CORES, defaulting to upstream's
      own 64, so the value is unchanged unless you set it.
 
+Three further patches are memory-only. Without them a full-scale campaign does not fit
+on a 15 GB host; each was found by a run that had to be stopped short of an OOM kill,
+and each was verified to leave predictions bit-identical:
+
+  4. run.py parses the search-space graphs into small integer arrays rather than
+     Python lists. The 1.1M molecules need about 12.7 GB as lists and 3.5 GB as arrays.
+  5. evaluate_mpnn clears Keras state before each call. Otherwise the ML worker keeps
+     about 190 MB per 50k-molecule scoring call and never releases it.
+  6. The ML executor caps glibc malloc arenas at 2. TensorFlow's thread pool otherwise
+     spreads allocations over dozens of arenas that are never trimmed.
+
 The Thinker, its agents, the acquisition function, the retraining schedule and the
 chemistry are all untouched. Idempotent: running it twice changes nothing.
 
@@ -43,9 +54,11 @@ def local_config(log_dir: str) -> Config:
             HighThroughputExecutor(label='cpu', max_workers=qc_workers,
                                    address='127.0.0.1',
                                    provider=LocalProvider(init_blocks=1, max_blocks=1)),
+            # Memory only: cap glibc malloc arenas in the ML worker, see patch 6.
             HighThroughputExecutor(label='gpu', max_workers=ml_workers,
                                    address='127.0.0.1',
-                                   provider=LocalProvider(init_blocks=1, max_blocks=1)),
+                                   provider=LocalProvider(init_blocks=1, max_blocks=1,
+                                                          worker_init='export MALLOC_ARENA_MAX=2')),
         ],
     )
 '''
@@ -74,7 +87,34 @@ def main(app_dir: str) -> None:
     if old_cfg in r:
         r = r.replace(old_cfg, new_cfg)
         print('  run.py: xTB thread count now reads COLMENA_XTB_CORES, default 64')
+    old_parse = "        self.mols['dict'] = self.mols['dict'].apply(json.loads)"
+    new_parse = """        # Memory only (patch 4): small integer arrays instead of Python lists. Values
+        # are unchanged and the loaders cast to int32 either way, so predictions match.
+        def _parse_compact(s):
+            d = json.loads(s)
+            d['atom'] = np.asarray(d['atom'], dtype=np.int8)
+            d['bond'] = np.asarray(d['bond'], dtype=np.int8)
+            d['connectivity'] = np.asarray(d['connectivity'], dtype=np.int16)
+            return d
+        self.mols['dict'] = self.mols['dict'].apply(_parse_compact)"""
+    if old_parse in r:
+        r = r.replace(old_parse, new_parse)
+        print('  run.py: search-space graphs stored as integer arrays')
     run.write_text(r)
+
+    nfp = app / 'moldesign' / 'score' / 'nfp.py'
+    n = nfp.read_text()
+    anchor = '    assert len(mol_dicts) > 0, "You must provide at least one molecule to inference function"\n'
+    guard = """
+    # Memory only (patch 5): release Keras state earlier tasks left in this worker.
+    import gc
+    tf.keras.backend.clear_session()
+    gc.collect()
+"""
+    if anchor in n and 'Memory only (patch 5)' not in n:
+        n = n.replace(anchor, anchor + guard, 1)
+        nfp.write_text(n)
+        print('  nfp.py: evaluate_mpnn clears Keras state per call')
 
 
 if __name__ == '__main__':
